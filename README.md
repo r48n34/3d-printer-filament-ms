@@ -11,6 +11,7 @@ A browser-local filament inventory and print-usage ledger built with Vite, React
 - Search and filter inventory and history
 - Export and restore validated JSON backups
 - Store all records locally in IndexedDB—no backend or account required
+- Install as a PWA and keep the app shell available offline after the first visit
 
 ## Development
 

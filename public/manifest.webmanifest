@@ -1,0 +1,17 @@
+{
+    "name": "Spoolbook - Filament tracker",
+    "short_name": "Spoolbook",
+    "description": "Track filament spools, print usage, and remaining weight on your device.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#f7f5f1",
+    "theme_color": "#b85922",
+    "icons": [
+        {
+            "src": "/spoolbook-icon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        }
+    ]
+}
