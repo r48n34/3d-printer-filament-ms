@@ -1,0 +1,190 @@
+.app-header {
+  background: rgba(255, 253, 250, 0.94);
+  backdrop-filter: blur(12px);
+}
+
+.app-navbar {
+  background: #fffdfa;
+}
+
+.app-navbar .mantine-NavLink-root {
+  border-radius: var(--mantine-radius-md);
+  color: var(--mantine-color-gray-7);
+  font-weight: 600;
+}
+
+.app-navbar .mantine-NavLink-root[data-active] {
+  color: var(--mantine-color-copper-8);
+  background: var(--mantine-color-copper-0);
+}
+
+.local-note {
+  border: 1px solid var(--mantine-color-gray-2);
+  border-radius: var(--mantine-radius-lg);
+  background: linear-gradient(145deg, #fffaf5, #f7f3ed);
+}
+
+.page-header-actions > .mantine-Group-root {
+  justify-content: flex-end;
+}
+
+.quick-print-section {
+  color: var(--mantine-color-gray-9);
+  border: 1px solid var(--mantine-color-copper-2);
+  background:
+    linear-gradient(120deg, rgba(255, 244, 237, 0.94), rgba(255, 255, 255, 0.98) 58%), #fff;
+  box-shadow: 0 14px 34px rgba(118, 51, 27, 0.08);
+}
+
+.quick-total {
+  min-width: 168px;
+  padding: 8px 14px;
+  text-align: right;
+  border: 1px solid var(--mantine-color-copper-2);
+  border-radius: var(--mantine-radius-lg);
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.mantine-AppShell-main {
+  background:
+    radial-gradient(circle at 88% 4%, rgba(232, 111, 46, 0.07), transparent 24rem), #f7f5f1;
+  min-height: 100vh;
+}
+
+.metric-card,
+.spool-card {
+  background: rgba(255, 255, 255, 0.9);
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease;
+}
+
+.metric-card:hover,
+.spool-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--mantine-shadow-md);
+  border-color: var(--mantine-color-copper-2);
+}
+
+.spool-card-clickable {
+  cursor: pointer;
+}
+
+.spool-card-clickable:focus-visible {
+  outline: 3px solid var(--mantine-color-copper-3);
+  outline-offset: 3px;
+}
+
+.spool-card-link {
+  margin: 0 calc(var(--mantine-spacing-lg) * -1) calc(var(--mantine-spacing-lg) * -1);
+  padding: 11px var(--mantine-spacing-lg);
+  color: var(--mantine-color-copper-7);
+  border-top: 1px solid var(--mantine-color-gray-2);
+  background: var(--mantine-color-copper-0);
+}
+
+.empty-state {
+  min-height: 280px;
+  display: grid;
+  place-items: center;
+  border-style: dashed;
+  background: rgba(255, 255, 255, 0.66);
+}
+
+.activity-row {
+  padding: 13px 0;
+  border-bottom: 1px solid var(--mantine-color-gray-2);
+}
+
+.activity-row:last-child {
+  border-bottom: 0;
+}
+
+.detail-activity-row {
+  min-height: 72px;
+  padding-block: 13px;
+  border-bottom: 1px solid var(--mantine-color-gray-2);
+}
+
+.detail-activity-row:last-child {
+  border-bottom: 0;
+}
+
+.detail-activity-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.detail-activity-copy {
+  min-width: 0;
+}
+
+.detail-empty {
+  min-height: 270px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: 1px dashed var(--mantine-color-gray-3);
+  background: var(--mantine-color-gray-0);
+}
+
+.calculated-value {
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  padding-inline: var(--mantine-spacing-sm);
+  border-radius: var(--mantine-radius-sm);
+  background: var(--mantine-color-gray-0);
+  border: 1px solid var(--mantine-color-gray-3);
+  font-weight: 700;
+}
+
+.filter-search {
+  flex: 1 1 280px;
+  max-width: 440px;
+}
+
+.mobile-history {
+  display: none;
+}
+
+@media (max-width: 47.99em) {
+  .page-header-actions > .mantine-Group-root {
+    justify-content: flex-start;
+  }
+
+  .page-header-actions .mantine-Button-root {
+    flex: 1;
+  }
+
+  .quick-total {
+    display: none;
+  }
+
+  .desktop-history {
+    display: none;
+  }
+
+  .mobile-history {
+    display: flex;
+  }
+
+  .filter-search {
+    flex-basis: 100%;
+    max-width: none;
+  }
+
+  .mantine-AppShell-main {
+    padding-bottom: calc(var(--mantine-spacing-xl) * 2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .metric-card,
+  .spool-card {
+    transition: none;
+  }
+}
