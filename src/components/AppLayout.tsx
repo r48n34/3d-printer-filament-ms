@@ -28,7 +28,7 @@ export function AppLayout() {
     return (
         <>
             <AppShell
-                header={{ height: 64 }}
+                header={{ height: 56 }}
                 navbar={{
                     width: 256,
                     breakpoint: "sm",
@@ -49,11 +49,11 @@ export function AppLayout() {
                         justify="space-between"
                     >
                         <Group gap="sm">
-                            <ThemeIcon size={38} radius="md" color="copper">
-                                <IconDisc size={22} />
+                            <ThemeIcon size={26} radius="md" color="copper">
+                                <IconDisc size={18} />
                             </ThemeIcon>
                             <div>
-                                <Title order={2} fz={20} lh={1}>
+                                <Title order={3} fz={18} lh={1}>
                                     Spoolbook
                                 </Title>
                                 <Text

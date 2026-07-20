@@ -1,9 +1,7 @@
 import {
-    Badge,
     Button,
     Card,
     Group,
-    Paper,
     SimpleGrid,
     Skeleton,
     Stack,
@@ -13,10 +11,8 @@ import {
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import {
-    IconBox,
     IconDisc,
     IconPlus,
-    IconPrinter,
     IconScale,
 } from "@tabler/icons-react";
 import { useNavigate } from "react-router-dom";
@@ -26,8 +22,7 @@ import { PageHeader } from "../components/PageHeader";
 import { SpoolCard } from "../components/SpoolCard";
 import { SpoolFormModal } from "../components/SpoolFormModal";
 import { useInventoryData } from "../hooks/useInventoryData";
-import { getLedgerEntries, getPrintTotal } from "../utils/filament";
-import { formatDateTime, formatGrams } from "../utils/format";
+import { formatGrams } from "../utils/format";
 
 export function DashboardPage() {
     const { spools, prints, adjustments, balanceBySpool, loading } =
@@ -37,11 +32,7 @@ export function DashboardPage() {
         (sum, spool) => sum + (balanceBySpool.get(spool.id) ?? 0),
         0,
     );
-    // const totalPrinted = prints.reduce(
-    //     (sum, record) => sum + getPrintTotal(record),
-    //     0,
-    // );
-    const recent = getLedgerEntries(prints, adjustments).reverse().slice(0, 5);
+
     const [spoolOpened, spoolModal] = useDisclosure(false);
     const [adjustmentOpened, adjustmentModal] = useDisclosure(false);
     const navigate = useNavigate();
@@ -120,99 +111,6 @@ export function DashboardPage() {
                     </SimpleGrid>
                 </section>
             ) : null}
-
-            {/* <Paper withBorder radius="lg" p="lg">
-                <Group justify="space-between" mb="md">
-                    <div>
-                        <Title order={2}>Recent activity</Title>
-                        <Text size="sm" c="dimmed">
-                            Latest prints and stock corrections
-                        </Text>
-                    </div>
-                    <Button
-                        variant="subtle"
-                        onClick={() => navigate("/history")}
-                    >
-                        Full history
-                    </Button>
-                </Group>
-                {recent.length ? (
-                    <Stack gap={0}>
-                        {recent.map((entry) => {
-                            const spool = spools.find(
-                                ({ id }) => id === entry.record.spoolId,
-                            );
-                            const isPrint = entry.type === "print";
-                            return (
-                                <Group
-                                    key={`${entry.type}-${entry.record.id}`}
-                                    className="activity-row"
-                                    justify="space-between"
-                                    wrap="nowrap"
-                                >
-                                    <Group gap="sm" wrap="nowrap">
-                                        <ThemeIcon
-                                            variant="light"
-                                            color={isPrint ? "copper" : "blue"}
-                                            radius="xl"
-                                        >
-                                            {isPrint ? (
-                                                <IconPrinter size={17} />
-                                            ) : (
-                                                <IconBox size={17} />
-                                            )}
-                                        </ThemeIcon>
-                                        <div>
-                                            <Text
-                                                fw={600}
-                                                size="sm"
-                                                lineClamp={1}
-                                            >
-                                                {isPrint
-                                                    ? entry.record.projectName
-                                                    : entry.record.reason}
-                                            </Text>
-                                            <Text size="xs" c="dimmed">
-                                                {spool?.name ?? "Missing spool"}{" "}
-                                                ·{" "}
-                                                {formatDateTime(
-                                                    entry.occurredAt,
-                                                )}
-                                            </Text>
-                                        </div>
-                                    </Group>
-                                    <Badge
-                                        variant="light"
-                                        color={
-                                            isPrint
-                                                ? "orange"
-                                                : entry.record.kind === "add"
-                                                  ? "teal"
-                                                  : "blue"
-                                        }
-                                    >
-                                        {isPrint
-                                            ? `−${formatGrams(getPrintTotal(entry.record))}`
-                                            : `${
-                                                  entry.record.kind === "add"
-                                                      ? "+"
-                                                      : entry.record.kind ===
-                                                          "remove"
-                                                        ? "−"
-                                                        : "="
-                                              }${formatGrams(entry.record.amountG)}`}
-                                    </Badge>
-                                </Group>
-                            );
-                        })}
-                    </Stack>
-                ) : (
-                    <Text c="dimmed" ta="center" py="xl">
-                        No activity yet. Record a print when your first job
-                        finishes.
-                    </Text>
-                )}
-            </Paper> */}
 
             <SpoolFormModal opened={spoolOpened} onClose={spoolModal.close} />
             <AdjustmentFormModal
