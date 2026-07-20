@@ -121,7 +121,7 @@ export function DashboardPage() {
                 </section>
             ) : null}
 
-            <Paper withBorder radius="lg" p="lg">
+            {/* <Paper withBorder radius="lg" p="lg">
                 <Group justify="space-between" mb="md">
                     <div>
                         <Title order={2}>Recent activity</Title>
@@ -212,7 +212,7 @@ export function DashboardPage() {
                         finishes.
                     </Text>
                 )}
-            </Paper>
+            </Paper> */}
 
             <SpoolFormModal opened={spoolOpened} onClose={spoolModal.close} />
             <AdjustmentFormModal
