@@ -187,7 +187,7 @@ export function QuickPrintSection({
                     </Group>
                     {total > 0 ? (
                         <div className="quick-total">
-                            <Text size="xs" c="dimmed" fw={700} tt="uppercase">
+                            <Text size="xs" c="dimmed" fw={500} tt="uppercase">
                                 Total used
                             </Text>
                             <Text fw={800} fz="lg">
@@ -196,7 +196,7 @@ export function QuickPrintSection({
                             <Text
                                 size="xs"
                                 c="dimmed"
-                                fw={700}
+                                fw={500}
                                 tt="uppercase"
                                 mt={6}
                             >

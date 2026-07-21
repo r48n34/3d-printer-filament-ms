@@ -84,7 +84,7 @@ export function SpoolCard({
                             <IconDisc size={23} />
                         </ThemeIcon>
                         <div>
-                            <Text fw={700} lineClamp={1}>
+                            <Text fw={500} lineClamp={1}>
                                 {spool.name}
                             </Text>
                             <Group gap={6} mt={3}>
@@ -151,7 +151,7 @@ export function SpoolCard({
                         <Text size="sm" c="dimmed">
                             Remaining
                         </Text>
-                        <Text fw={700} c={balance < 0 ? "red" : undefined}>
+                        <Text fw={500} c={balance < 0 ? "red" : undefined}>
                             {formatGrams(balance)}
                         </Text>
                     </Group>
@@ -169,7 +169,7 @@ export function SpoolCard({
                 </div>
                 {onOpen ? (
                     <Group justify="space-between" className="spool-card-link">
-                        <Text size="xs" fw={700} c="copper.8">
+                        <Text size="xs" fw={500} c="copper.8">
                             View spool details
                         </Text>
                         <IconChevronRight size={16} />

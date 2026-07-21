@@ -17,6 +17,7 @@ import { useEffect } from "react";
 
 import { createId, db } from "../db";
 import { type Material, MATERIALS, type Spool } from "../types";
+import dayjs from "dayjs";
 
 interface SpoolFormValues {
     name: string;
@@ -44,7 +45,7 @@ const getInitialValues = (spool?: Spool): SpoolFormValues => ({
     customMaterial: spool?.customMaterial ?? "",
     color: spool?.color ?? "",
     brand: spool?.brand ?? "",
-    purchaseDate: spool?.purchaseDate ?? null,
+    purchaseDate: spool?.purchaseDate ?? dayjs().format("YYYY-MM-DD"),
     purchasePrice: spool?.purchasePrice ?? "",
     purchaseCurrency: spool?.purchaseCurrency ?? "HKD",
     notes: spool?.notes ?? "",
@@ -90,21 +91,18 @@ export function SpoolFormModal({
             name: values.name.trim(),
             initialWeightG: Number(values.initialWeightG),
             material: values.material as Material,
-            customMaterial:
-                values.material === "Other"
-                    ? clean(values.customMaterial)
-                    : undefined,
+            customMaterial: values.material === "Other"
+                ? clean(values.customMaterial)
+                : undefined,
             color: clean(values.color),
             brand: clean(values.brand),
             purchaseDate: values.purchaseDate ?? undefined,
-            purchasePrice:
-                values.purchasePrice === ""
-                    ? undefined
-                    : Number(values.purchasePrice),
-            purchaseCurrency:
-                values.purchasePrice === ""
-                    ? undefined
-                    : values.purchaseCurrency.trim(),
+            purchasePrice: values.purchasePrice === ""
+                ? undefined
+                : Number(values.purchasePrice),
+            purchaseCurrency: values.purchasePrice === ""
+                ? undefined
+                : values.purchaseCurrency.trim(),
             notes: clean(values.notes),
             archivedAt: spool?.archivedAt,
             createdAt: spool?.createdAt ?? now,
@@ -143,46 +141,15 @@ export function SpoolFormModal({
                             <NumberInput
                                 label="Starting weight"
                                 suffix=" g"
-                                min={0.01}
+                                min={1}
                                 decimalScale={2}
+                                step={1}
                                 withAsterisk
                                 {...form.getInputProps("initialWeightG")}
                             />
                         </Grid.Col>
                     </Grid>
-                    <Grid>
-                        <Grid.Col span={{ base: 12, sm: 6 }}>
-                            <Select
-                                label="Material"
-                                data={[...MATERIALS]}
-                                allowDeselect={false}
-                                {...form.getInputProps("material")}
-                            />
-                        </Grid.Col>
-                        <Grid.Col span={{ base: 12, sm: 6 }}>
-                            {form.values.material === "Other" ? (
-                                <TextInput
-                                    label="Custom material"
-                                    placeholder="e.g. PCTG"
-                                    withAsterisk
-                                    {...form.getInputProps("customMaterial")}
-                                />
-                            ) : (
-                                <TextInput
-                                    label="Brand"
-                                    placeholder="Optional"
-                                    {...form.getInputProps("brand")}
-                                />
-                            )}
-                        </Grid.Col>
-                    </Grid>
-                    {form.values.material === "Other" ? (
-                        <TextInput
-                            label="Brand"
-                            placeholder="Optional"
-                            {...form.getInputProps("brand")}
-                        />
-                    ) : null}
+
                     <ColorInput
                         label="Filament color"
                         placeholder="Choose or enter a color"
@@ -199,6 +166,49 @@ export function SpoolFormModal({
                         ]}
                         {...form.getInputProps("color")}
                     />
+
+                    <Grid>
+                        <Grid.Col span={{ base: 12, sm: 6 }}>
+                            <Select
+                                label="Material"
+                                data={[...MATERIALS]}
+                                allowDeselect={false}
+                                {...form.getInputProps("material")}
+                            />
+                        </Grid.Col>
+
+                        <Grid.Col span={{ base: 12, sm: 6 }}>
+                            {form.values.material === "Other"
+                                ? (
+                                    <TextInput
+                                        label="Custom material"
+                                        placeholder="e.g. PCTG"
+                                        withAsterisk
+                                        {...form.getInputProps(
+                                            "customMaterial",
+                                        )}
+                                    />
+                                )
+                                : (
+                                    <TextInput
+                                        label="Brand"
+                                        placeholder="Optional"
+                                        {...form.getInputProps("brand")}
+                                    />
+                                )}
+                        </Grid.Col>
+                    </Grid>
+
+                    {form.values.material === "Other"
+                        ? (
+                            <TextInput
+                                label="Brand"
+                                placeholder="Optional"
+                                {...form.getInputProps("brand")}
+                            />
+                        )
+                        : null}
+
                     <Grid>
                         <Grid.Col span={{ base: 12, sm: 6 }}>
                             <DateInput

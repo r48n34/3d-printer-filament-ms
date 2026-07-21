@@ -213,7 +213,7 @@ export function DataPage() {
                                         color="var(--mantine-color-blue-7)"
                                     />
                                     <div>
-                                        <Text fw={700} size="sm">
+                                        <Text fw={500} size="sm">
                                             {fileName}
                                         </Text>
                                         <Text size="xs" c="dimmed" mt={3}>
@@ -252,7 +252,7 @@ function CountCard({ label, value }: { label: string; value: number }) {
                     <Text
                         size="xs"
                         tt="uppercase"
-                        fw={700}
+                        fw={500}
                         c="dimmed"
                         lts={0.7}
                     >

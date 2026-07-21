@@ -28,6 +28,11 @@ const HistoryPage = lazy(() =>
 const DataPage = lazy(() =>
     import("./pages/DataPage").then((module) => ({ default: module.DataPage })),
 );
+const PrivacyPage = lazy(() =>
+    import("./pages/PrivacyPage").then((module) => ({
+        default: module.PrivacyPage,
+    })),
+);
 
 function App() {
     return (
@@ -48,6 +53,7 @@ function App() {
                     />
                     <Route path="history" element={<HistoryPage />} />
                     <Route path="data" element={<DataPage />} />
+                    <Route path="privacy" element={<PrivacyPage />} />
                 </Route>
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

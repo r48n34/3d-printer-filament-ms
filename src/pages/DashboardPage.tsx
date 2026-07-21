@@ -142,7 +142,7 @@ function MetricCard({
                     <Text
                         size="xs"
                         tt="uppercase"
-                        fw={700}
+                        fw={500}
                         c="dimmed"
                         lts={0.7}
                     >

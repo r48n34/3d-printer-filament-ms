@@ -1,5 +1,6 @@
 import {
     ActionIcon,
+    Accordion,
     Alert,
     Badge,
     Button,
@@ -10,8 +11,7 @@ import {
     Group,
     Menu,
     Paper,
-    Progress,
-    ScrollArea,
+    RingProgress,
     SimpleGrid,
     Skeleton,
     Stack,
@@ -30,7 +30,6 @@ import {
     IconCalendar,
     IconCoin,
     IconDisc,
-    IconDots,
     IconEdit,
     IconHistory,
     IconPalette,
@@ -39,8 +38,11 @@ import {
     IconScale,
     IconTrash,
 } from "@tabler/icons-react";
-import { useState } from "react";
+import { MantineReactTable, type MRT_ColumnDef } from "mantine-react-table";
+import { useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+
+import "mantine-react-table/styles.css";
 
 import { AdjustmentFormModal } from "../components/AdjustmentFormModal";
 import { PageHeader } from "../components/PageHeader";
@@ -213,23 +215,27 @@ export function FilamentDetailPage() {
                 description={`${getMaterialName(spool)}${spool.brand ? ` · ${spool.brand}` : ""} · Added ${formatDate(spool.createdAt)}`}
                 actions={
                     <Group gap="sm">
-                        <Button
-                            variant="default"
-                            leftSection={<IconEdit size={17} />}
-                            onClick={editModal.open}
-                        >
-                            Edit
-                        </Button>
-                        <Button
-                            variant="default"
-                            leftSection={
-                                <IconAdjustmentsHorizontal size={17} />
-                            }
-                            onClick={() => openAdjustment()}
-                            disabled={Boolean(spool.archivedAt)}
-                        >
-                            Adjust stock
-                        </Button>
+                        <Tooltip label="Edit spool">
+                            <ActionIcon
+                                variant="default"
+                                size="lg"
+                                onClick={editModal.open}
+                                aria-label="Edit spool"
+                            >
+                                <IconEdit size={18} />
+                            </ActionIcon>
+                        </Tooltip>
+                        <Tooltip label="Adjust stock">
+                            <ActionIcon
+                                variant="default"
+                                size="lg"
+                                onClick={() => openAdjustment()}
+                                disabled={Boolean(spool.archivedAt)}
+                                aria-label="Adjust stock"
+                            >
+                                <IconAdjustmentsHorizontal size={18} />
+                            </ActionIcon>
+                        </Tooltip>
                         <Button
                             leftSection={<IconPrinter size={17} />}
                             onClick={() => openPrint()}
@@ -260,19 +266,14 @@ export function FilamentDetailPage() {
                 </Alert>
             ) : null}
 
-            <SimpleGrid cols={{ base: 1, xs: 2, lg: 4 }}>
-                <SummaryCard
-                    icon={<IconScale size={21} />}
-                    label="Remaining"
-                    value={formatGrams(balance)}
-                    detail={`${Math.round(progress)}% of starting weight`}
-                    color={balance < 0 ? "red" : "copper"}
-                />
-                <SummaryCard
-                    icon={<IconPrinter size={21} />}
-                    label="Printed usage"
-                    value={formatGrams(printedWeight)}
-                    detail={`${spoolPrints.length} print ${spoolPrints.length === 1 ? "record" : "records"}`}
+            <SimpleGrid cols={{ base: 1, xs: 2, lg: 3 }}>
+                <UsageBalanceCard
+                    balance={balance}
+                    initialWeight={spool.initialWeightG}
+                    printedWeight={printedWeight}
+                    printCount={spoolPrints.length}
+                    progress={progress}
+                    spoolName={spool.name}
                 />
                 <SummaryCard
                     icon={<IconCoin size={21} />}
@@ -292,146 +293,115 @@ export function FilamentDetailPage() {
                 />
             </SimpleGrid>
 
-            <Paper withBorder radius="lg" p="lg">
-                <Group justify="space-between" mb="sm">
-                    <div>
-                        <Text fw={700}>Spool balance</Text>
-                        <Text size="xs" c="dimmed">
-                            {formatGrams(balance)} remaining from{" "}
-                            {formatGrams(spool.initialWeightG)} starting weight
-                        </Text>
-                    </div>
-                    <Badge
-                        variant="light"
-                        color={
-                            balance < 0
-                                ? "red"
-                                : progress < 20
-                                  ? "orange"
-                                  : "copper"
-                        }
-                    >
-                        {balance < 0
-                            ? "Below zero"
-                            : `${Math.round(progress)}% left`}
-                    </Badge>
-                </Group>
-                <Progress
-                    value={progress}
-                    size="lg"
-                    radius="xl"
-                    color={
-                        balance < 0
-                            ? "red"
-                            : progress < 20
-                              ? "orange"
-                              : "copper"
-                    }
-                    aria-label={`${spool.name} remaining filament`}
-                />
-            </Paper>
-
             <Grid>
-                <Grid.Col span={{ base: 12, lg: 4 }}>
-                    <Card withBorder radius="lg" p="xl" h="100%">
-                        <Group justify="space-between" mb="lg">
-                            <div>
-                                <Title order={2}>Filament data</Title>
+                <Grid.Col span={12} order={2}>
+                    <Accordion variant="contained" radius="lg">
+                        <Accordion.Item value="filament-data">
+                            <Accordion.Control icon={<IconDisc size={20} />}>
+                                <Text fw={600}>Filament data</Text>
                                 <Text size="sm" c="dimmed">
                                     Details and pricing for this spool
                                 </Text>
-                            </div>
-                            <Tooltip
-                                label={
-                                    spool.archivedAt
-                                        ? "Restore spool"
-                                        : "Archive spool"
-                                }
-                            >
-                                <ActionIcon
-                                    variant="light"
-                                    color="gray"
-                                    onClick={toggleArchive}
-                                    aria-label={
-                                        spool.archivedAt
-                                            ? "Restore spool"
-                                            : "Archive spool"
-                                    }
-                                >
-                                    {spool.archivedAt ? (
-                                        <IconRestore size={18} />
-                                    ) : (
-                                        <IconArchive size={18} />
-                                    )}
-                                </ActionIcon>
-                            </Tooltip>
-                        </Group>
-                        <Stack gap="md">
-                            <DetailItem
-                                icon={<IconDisc size={17} />}
-                                label="Material"
-                                value={getMaterialName(spool)}
-                            />
-                            <DetailItem
-                                icon={<IconScale size={17} />}
-                                label="Starting weight"
-                                value={formatGrams(spool.initialWeightG)}
-                            />
-                            <DetailItem
-                                icon={<IconCoin size={17} />}
-                                label="Purchase price"
-                                value={
-                                    spool.purchasePrice !== undefined
-                                        ? formatMoney(
-                                              spool.purchasePrice,
-                                              spool.purchaseCurrency,
-                                          )
-                                        : "Not provided"
-                                }
-                                note={
-                                    spool.purchasePrice !== undefined
-                                        ? `${formatMoney(spool.purchasePrice / spool.initialWeightG, spool.purchaseCurrency)} per gram`
-                                        : "Add a price to calculate print costs"
-                                }
-                            />
-                            <DetailItem
-                                icon={<IconCalendar size={17} />}
-                                label="Purchase date"
-                                value={formatDate(spool.purchaseDate)}
-                            />
-                            <DetailItem
-                                icon={<IconPalette size={17} />}
-                                label="Color"
-                                value={spool.color || "Not provided"}
-                                swatch={spool.color}
-                            />
-                            {spool.notes ? (
-                                <>
-                                    <Divider />
-                                    <div>
-                                        <Text
-                                            size="xs"
-                                            fw={700}
-                                            tt="uppercase"
-                                            c="dimmed"
-                                            mb={5}
+                            </Accordion.Control>
+                            <Accordion.Panel>
+                                <Stack gap="md">
+                                    <Group justify="flex-end">
+                                        <Tooltip
+                                            label={
+                                                spool.archivedAt
+                                                    ? "Restore spool"
+                                                    : "Archive spool"
+                                            }
                                         >
-                                            Notes
-                                        </Text>
-                                        <Text
-                                            size="sm"
-                                            style={{ whiteSpace: "pre-wrap" }}
-                                        >
-                                            {spool.notes}
-                                        </Text>
-                                    </div>
-                                </>
-                            ) : null}
-                        </Stack>
-                    </Card>
+                                            <ActionIcon
+                                                variant="light"
+                                                color="gray"
+                                                onClick={toggleArchive}
+                                                aria-label={
+                                                    spool.archivedAt
+                                                        ? "Restore spool"
+                                                        : "Archive spool"
+                                                }
+                                            >
+                                                {spool.archivedAt ? (
+                                                    <IconRestore size={18} />
+                                                ) : (
+                                                    <IconArchive size={18} />
+                                                )}
+                                            </ActionIcon>
+                                        </Tooltip>
+                                    </Group>
+                                    <DetailItem
+                                        icon={<IconDisc size={17} />}
+                                        label="Material"
+                                        value={getMaterialName(spool)}
+                                    />
+                                    <DetailItem
+                                        icon={<IconScale size={17} />}
+                                        label="Starting weight"
+                                        value={formatGrams(
+                                            spool.initialWeightG,
+                                        )}
+                                    />
+                                    <DetailItem
+                                        icon={<IconCoin size={17} />}
+                                        label="Purchase price"
+                                        value={
+                                            spool.purchasePrice !== undefined
+                                                ? formatMoney(
+                                                      spool.purchasePrice,
+                                                      spool.purchaseCurrency,
+                                                  )
+                                                : "Not provided"
+                                        }
+                                        note={
+                                            spool.purchasePrice !== undefined
+                                                ? `${formatMoney(spool.purchasePrice / spool.initialWeightG, spool.purchaseCurrency)} per gram`
+                                                : "Add a price to calculate print costs"
+                                        }
+                                    />
+                                    <DetailItem
+                                        icon={<IconCalendar size={17} />}
+                                        label="Purchase date"
+                                        value={formatDate(spool.purchaseDate)}
+                                    />
+                                    <DetailItem
+                                        icon={<IconPalette size={17} />}
+                                        label="Color"
+                                        value={spool.color || "Not provided"}
+                                        swatch={spool.color}
+                                    />
+                                    {spool.notes ? (
+                                        <>
+                                            <Divider />
+                                            <div>
+                                                <Text
+                                                    size="xs"
+                                                    fw={500}
+                                                    tt="uppercase"
+                                                    c="dimmed"
+                                                    mb={5}
+                                                >
+                                                    Notes
+                                                </Text>
+                                                <Text
+                                                    size="sm"
+                                                    style={{
+                                                        whiteSpace: "pre-wrap",
+                                                    }}
+                                                >
+                                                    {spool.notes}
+                                                </Text>
+                                            </div>
+                                        </>
+                                    ) : null}
+                                </Stack>
+                            </Accordion.Panel>
+                        </Accordion.Item>
+                    </Accordion>
                 </Grid.Col>
 
-                <Grid.Col span={{ base: 12, lg: 8 }}>
+                <Grid.Col span={12} order={1}>
                     <Card withBorder radius="lg" p="xl" h="100%">
                         <Group justify="space-between" mb="lg">
                             <div>
@@ -454,25 +424,16 @@ export function FilamentDetailPage() {
                         </Group>
 
                         {entries.length ? (
-                            <ScrollArea.Autosize mah={560} offsetScrollbars>
-                                <Stack gap={0} pr="sm">
-                                    {entries.map((entry) => (
-                                        <ActivityRow
-                                            key={`${entry.type}-${entry.record.id}`}
-                                            entry={entry}
-                                            spool={spool}
-                                            onEdit={() =>
-                                                entry.type === "print"
-                                                    ? openPrint(entry.record)
-                                                    : openAdjustment(
-                                                          entry.record,
-                                                      )
-                                            }
-                                            onDelete={() => removeEntry(entry)}
-                                        />
-                                    ))}
-                                </Stack>
-                            </ScrollArea.Autosize>
+                            <HistoryActivityTable
+                                entries={entries}
+                                spool={spool}
+                                onEdit={(entry) =>
+                                    entry.type === "print"
+                                        ? openPrint(entry.record)
+                                        : openAdjustment(entry.record)
+                                }
+                                onDelete={removeEntry}
+                            />
                         ) : (
                             <Paper className="detail-empty" radius="lg" p="xl">
                                 <ThemeIcon
@@ -483,7 +444,7 @@ export function FilamentDetailPage() {
                                 >
                                     <IconPrinter size={21} />
                                 </ThemeIcon>
-                                <Text fw={700} mt="sm">
+                                <Text fw={500} mt="sm">
                                     No activity for this spool yet
                                 </Text>
                                 <Text size="sm" c="dimmed" mt={3}>
@@ -532,6 +493,65 @@ export function FilamentDetailPage() {
     );
 }
 
+function UsageBalanceCard({
+    balance,
+    initialWeight,
+    printedWeight,
+    printCount,
+    progress,
+    spoolName,
+}: {
+    balance: number;
+    initialWeight: number;
+    printedWeight: number;
+    printCount: number;
+    progress: number;
+    spoolName: string;
+}) {
+    const color = balance < 0 ? "red" : progress < 20 ? "orange" : "copper";
+
+    return (
+        <Paper withBorder radius="lg" p="lg">
+            <Group justify="space-between" align="center" wrap="nowrap">
+                <div>
+                    <Text
+                        size="xs"
+                        tt="uppercase"
+                        fw={500}
+                        c="dimmed"
+                        lts={0.7}
+                    >
+                        Printed usage
+                    </Text>
+                    <Text fz={24} fw={800} mt={5}>
+                        {formatGrams(printedWeight)}
+                    </Text>
+                    <Text size="xs" c="dimmed" mt={2}>
+                        {printCount} print{" "}
+                        {printCount === 1 ? "record" : "records"}
+                    </Text>
+                    <Text size="xs" c="dimmed" mt="sm">
+                        {formatGrams(balance)} remaining from{" "}
+                        {formatGrams(initialWeight)}
+                    </Text>
+                </div>
+                <RingProgress
+                    aria-label={`${spoolName} remaining filament`}
+                    roundCaps
+                    size={88}
+                    thickness={8}
+                    sections={[{ value: progress, color }]}
+                    label={
+                        <Text ta="center" size="sm" fw={700}>
+                            {Math.round(progress)}%
+                        </Text>
+                    }
+                />
+            </Group>
+        </Paper>
+    );
+}
+
 function SummaryCard({
     icon,
     label,
@@ -552,7 +572,7 @@ function SummaryCard({
                     <Text
                         size="xs"
                         tt="uppercase"
-                        fw={700}
+                        fw={500}
                         c="dimmed"
                         lts={0.7}
                     >
@@ -614,104 +634,167 @@ function DetailItem({
     );
 }
 
-function ActivityRow({
-    entry,
+function HistoryActivityTable({
+    entries,
     spool,
     onEdit,
     onDelete,
 }: {
-    entry: LedgerEntry;
+    entries: LedgerEntry[];
     spool: Spool;
-    onEdit: () => void;
-    onDelete: () => void;
+    onEdit: (entry: LedgerEntry) => void;
+    onDelete: (entry: LedgerEntry) => void;
 }) {
-    const isPrint = entry.type === "print";
-    const printCost = isPrint
-        ? getEstimatedPrintCost(spool, entry.record)
-        : undefined;
-    const change = isPrint
-        ? `-${formatGrams(getPrintTotal(entry.record))}`
-        : entry.record.kind === "set"
-          ? `Set to ${formatGrams(entry.record.amountG)}`
-          : `${entry.record.kind === "add" ? "+" : "-"}${formatGrams(entry.record.amountG)}`;
+    const columns = useMemo<MRT_ColumnDef<LedgerEntry>[]>(
+        () => [
+            {
+                accessorKey: "occurredAt",
+                header: "Date",
+                Cell: ({ cell }) => (
+                    <Text size="sm">
+                        {formatDateTime(cell.getValue<string>())}
+                    </Text>
+                ),
+            },
+            {
+                id: "activity",
+                accessorFn: getActivityLabel,
+                header: "Activity",
+                Cell: ({ row }) => {
+                    const entry = row.original;
+                    const isPrint = entry.type === "print";
+
+                    return (
+                        <Group gap="xs" wrap="nowrap">
+                            <ThemeIcon
+                                variant="light"
+                                color={isPrint ? "copper" : "blue"}
+                                radius="xl"
+                                size="sm"
+                            >
+                                {isPrint ? (
+                                    <IconPrinter size={14} />
+                                ) : (
+                                    <IconAdjustmentsHorizontal size={14} />
+                                )}
+                            </ThemeIcon>
+                            <div>
+                                <Text fw={650} size="sm">
+                                    {getActivityLabel(entry)}
+                                </Text>
+                                <Badge
+                                    size="xs"
+                                    variant="light"
+                                    color={isPrint ? "orange" : "blue"}
+                                >
+                                    {isPrint ? "Print" : "Adjustment"}
+                                </Badge>
+                            </div>
+                        </Group>
+                    );
+                },
+            },
+            {
+                id: "details",
+                accessorFn: (entry) => entry.type,
+                header: "Details",
+                Cell: ({ row }) => {
+                    return (
+                        <Text size="sm" c="dimmed">
+                            {getActivityDetail(row.original, spool)}
+                        </Text>
+                    );
+                },
+            },
+            {
+                id: "change",
+                accessorFn: getActivityChangeValue,
+                header: "Change",
+                Cell: ({ row }) => {
+                    const entry = row.original;
+                    const isPrint = entry.type === "print";
+
+                    return (
+                        <Text
+                            size="sm"
+                            fw={500}
+                            c={isPrint ? "orange.8" : undefined}
+                        >
+                            {getActivityChange(entry)}
+                        </Text>
+                    );
+                },
+            },
+        ],
+        [spool],
+    );
 
     return (
-        <Group
-            className="detail-activity-row"
-            justify="space-between"
-            wrap="nowrap"
-        >
-            <Group gap="sm" wrap="nowrap" className="detail-activity-main">
-                <ThemeIcon
-                    variant="light"
-                    color={isPrint ? "copper" : "blue"}
-                    radius="xl"
-                >
-                    {isPrint ? (
-                        <IconPrinter size={17} />
-                    ) : (
-                        <IconAdjustmentsHorizontal size={17} />
-                    )}
-                </ThemeIcon>
-                <div className="detail-activity-copy">
-                    <Group gap="xs">
-                        <Text fw={650} size="sm">
-                            {isPrint
-                                ? entry.record.projectName
-                                : entry.record.reason}
-                        </Text>
-                        <Badge
-                            size="xs"
-                            variant="light"
-                            color={isPrint ? "orange" : "blue"}
-                        >
-                            {isPrint ? "Print" : "Adjustment"}
-                        </Badge>
-                    </Group>
-                    <Text size="xs" c="dimmed" mt={3}>
-                        {isPrint
-                            ? `${entry.record.quantity} × ${formatGrams(entry.record.gramsPerItem)}`
-                            : entry.record.kind === "set"
-                              ? "Measured remaining weight"
-                              : `${entry.record.kind === "add" ? "Added to" : "Removed from"} stock`}
-                        {isPrint
-                            ? ` · Est. ${printCost !== undefined ? formatMoney(printCost, spool.purchaseCurrency) : "not priced"}`
-                            : ""}
-                        {` · ${formatDateTime(entry.occurredAt)}`}
-                    </Text>
-                </div>
-            </Group>
-            <Group gap="xs" wrap="nowrap">
-                <Text size="sm" fw={700} c={isPrint ? "orange.8" : undefined}>
-                    {change}
-                </Text>
-                <Menu position="bottom-end" shadow="md">
-                    <Menu.Target>
-                        <ActionIcon
-                            variant="subtle"
-                            color="gray"
-                            aria-label="Activity actions"
-                        >
-                            <IconDots size={18} />
-                        </ActionIcon>
-                    </Menu.Target>
-                    <Menu.Dropdown>
-                        <Menu.Item
-                            leftSection={<IconEdit size={15} />}
-                            onClick={onEdit}
-                        >
-                            Edit
-                        </Menu.Item>
-                        <Menu.Item
-                            color="red"
-                            leftSection={<IconTrash size={15} />}
-                            onClick={onDelete}
-                        >
-                            Delete
-                        </Menu.Item>
-                    </Menu.Dropdown>
-                </Menu>
-            </Group>
-        </Group>
+        <MantineReactTable
+            columns={columns}
+            data={entries}
+            enableBottomToolbar={false}
+            enableColumnActions={false}
+            enableColumnFilters={false}
+            enableDensityToggle={false}
+            enableFullScreenToggle={false}
+            enableGlobalFilter={false}
+            enablePagination={false}
+            enableTopToolbar={false}
+            enableRowActions
+            getRowId={(entry) => `${entry.type}-${entry.record.id}`}
+            mantinePaperProps={{ shadow: "none", withBorder: false }}
+            mantineTableContainerProps={{ mah: 560 }}
+            positionActionsColumn="last"
+            renderRowActionMenuItems={({ row }) => (
+                <>
+                    <Menu.Item
+                        leftSection={<IconEdit size={15} />}
+                        onClick={() => onEdit(row.original)}
+                    >
+                        Edit
+                    </Menu.Item>
+                    <Menu.Item
+                        color="red"
+                        leftSection={<IconTrash size={15} />}
+                        onClick={() => onDelete(row.original)}
+                    >
+                        Delete
+                    </Menu.Item>
+                </>
+            )}
+        />
     );
+}
+
+function getActivityLabel(entry: LedgerEntry) {
+    return entry.type === "print"
+        ? entry.record.projectName
+        : entry.record.reason;
+}
+
+function getActivityDetail(entry: LedgerEntry, spool: Spool) {
+    if (entry.type !== "print") {
+        return entry.record.kind === "set"
+            ? "Measured remaining weight"
+            : `${entry.record.kind === "add" ? "Added to" : "Removed from"} stock`;
+    }
+
+    const printCost = getEstimatedPrintCost(spool, entry.record);
+    return `${entry.record.quantity} × ${formatGrams(entry.record.gramsPerItem)} · Est. ${printCost !== undefined ? formatMoney(printCost, spool.purchaseCurrency) : "not priced"}`;
+}
+
+function getActivityChangeValue(entry: LedgerEntry) {
+    if (entry.type === "print") return -getPrintTotal(entry.record);
+    if (entry.record.kind === "set" || entry.record.kind === "add")
+        return entry.record.amountG;
+    return -entry.record.amountG;
+}
+
+function getActivityChange(entry: LedgerEntry) {
+    if (entry.type === "print")
+        return `-${formatGrams(getPrintTotal(entry.record))}`;
+    if (entry.record.kind === "set")
+        return `Set to ${formatGrams(entry.record.amountG)}`;
+    return `${entry.record.kind === "add" ? "+" : "-"}${formatGrams(entry.record.amountG)}`;
 }

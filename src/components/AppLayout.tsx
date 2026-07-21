@@ -66,9 +66,7 @@ export function AppLayout() {
                                 </Text>
                             </div>
                         </Group>
-                        <Text size="xs" c="dimmed" visibleFrom="sm">
-                            Stored locally in this browser
-                        </Text>
+                        
                     </Group>
                 </AppShell.Header>
 
@@ -78,7 +76,7 @@ export function AppLayout() {
                             <Text
                                 size="xs"
                                 tt="uppercase"
-                                fw={700}
+                                fw={500}
                                 c="dimmed"
                                 lts={0.8}
                                 px="sm"

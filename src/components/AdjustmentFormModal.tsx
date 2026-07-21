@@ -230,7 +230,7 @@ export function AdjustmentFormModal({
                         Projected remaining:{" "}
                         <Text
                             span
-                            fw={700}
+                            fw={500}
                             c={projectedBalance < 0 ? "red" : undefined}
                         >
                             {formatGrams(projectedBalance)}

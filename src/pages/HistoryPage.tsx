@@ -1,17 +1,13 @@
 import {
-    ActionIcon,
     Badge,
     Button,
-    Card,
     Group,
     Menu,
     Paper,
     Select,
     Stack,
-    Table,
     Text,
     TextInput,
-    Tooltip,
 } from "@mantine/core";
 import { DatePickerInput } from "@mantine/dates";
 import { useDisclosure } from "@mantine/hooks";
@@ -19,14 +15,16 @@ import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import {
     IconAdjustmentsHorizontal,
-    IconDots,
     IconEdit,
     IconPrinter,
     IconSearch,
     IconTrash,
 } from "@tabler/icons-react";
 import dayjs from "dayjs";
-import { useState } from "react";
+import { MantineReactTable, type MRT_ColumnDef } from "mantine-react-table";
+import { useMemo, useState } from "react";
+
+import "mantine-react-table/styles.css";
 import { useSearchParams } from "react-router-dom";
 
 import { AdjustmentFormModal } from "../components/AdjustmentFormModal";
@@ -223,76 +221,16 @@ export function HistoryPage() {
             </Paper>
 
             {entries.length ? (
-                <>
-                    <Card
-                        withBorder
-                        radius="lg"
-                        p={0}
-                        className="desktop-history"
-                    >
-                        <Table.ScrollContainer minWidth={880}>
-                            <Table
-                                verticalSpacing="md"
-                                horizontalSpacing="lg"
-                                highlightOnHover
-                            >
-                                <Table.Thead>
-                                    <Table.Tr>
-                                        <Table.Th>Activity</Table.Th>
-                                        <Table.Th>Spool</Table.Th>
-                                        <Table.Th>Date</Table.Th>
-                                        <Table.Th ta="right">Change</Table.Th>
-                                        <Table.Th ta="right">
-                                            Est. material cost
-                                        </Table.Th>
-                                        <Table.Th w={48}>
-                                            <span className="sr-only">
-                                                Actions
-                                            </span>
-                                        </Table.Th>
-                                    </Table.Tr>
-                                </Table.Thead>
-                                <Table.Tbody>
-                                    {entries.map((entry) => (
-                                        <HistoryRow
-                                            key={`${entry.type}-${entry.record.id}`}
-                                            entry={entry}
-                                            spool={spools.find(
-                                                ({ id }) =>
-                                                    id === entry.record.spoolId,
-                                            )}
-                                            onEdit={() =>
-                                                entry.type === "print"
-                                                    ? openPrint(entry.record)
-                                                    : openAdjustment(
-                                                          entry.record,
-                                                      )
-                                            }
-                                            onDelete={() => remove(entry)}
-                                        />
-                                    ))}
-                                </Table.Tbody>
-                            </Table>
-                        </Table.ScrollContainer>
-                    </Card>
-                    <Stack className="mobile-history" gap="sm">
-                        {entries.map((entry) => (
-                            <HistoryCard
-                                key={`${entry.type}-${entry.record.id}`}
-                                entry={entry}
-                                spool={spools.find(
-                                    ({ id }) => id === entry.record.spoolId,
-                                )}
-                                onEdit={() =>
-                                    entry.type === "print"
-                                        ? openPrint(entry.record)
-                                        : openAdjustment(entry.record)
-                                }
-                                onDelete={() => remove(entry)}
-                            />
-                        ))}
-                    </Stack>
-                </>
+                <HistoryActivityTable
+                    entries={entries}
+                    spools={spools}
+                    onEdit={(entry) =>
+                        entry.type === "print"
+                            ? openPrint(entry.record)
+                            : openAdjustment(entry.record)
+                    }
+                    onDelete={remove}
+                />
             ) : (
                 <EmptyState
                     title={
@@ -358,176 +296,162 @@ function entryDetails(entry: LedgerEntry) {
     };
 }
 
-function EntryMenu({
-    entry,
+function HistoryActivityTable({
+    entries,
+    spools,
     onEdit,
     onDelete,
 }: {
-    entry: LedgerEntry;
-    onEdit: () => void;
-    onDelete: () => void;
+    entries: LedgerEntry[];
+    spools: Spool[];
+    onEdit: (entry: LedgerEntry) => void;
+    onDelete: (entry: LedgerEntry) => void;
 }) {
-    return (
-        <Menu position="bottom-end" shadow="md">
-            <Menu.Target>
-                <Tooltip label="Entry actions">
-                    <ActionIcon
-                        variant="subtle"
-                        color="gray"
-                        aria-label={`Actions for ${entry.type} entry`}
-                    >
-                        <IconDots size={18} />
-                    </ActionIcon>
-                </Tooltip>
-            </Menu.Target>
-            <Menu.Dropdown>
-                <Menu.Item
-                    leftSection={<IconEdit size={16} />}
-                    onClick={onEdit}
-                >
-                    Edit
-                </Menu.Item>
-                <Menu.Item
-                    color="red"
-                    leftSection={<IconTrash size={16} />}
-                    onClick={onDelete}
-                >
-                    Delete
-                </Menu.Item>
-            </Menu.Dropdown>
-        </Menu>
+    const spoolsById = useMemo(
+        () => new Map(spools.map((spool) => [spool.id, spool])),
+        [spools],
     );
-}
-
-function HistoryRow({
-    entry,
-    spool,
-    onEdit,
-    onDelete,
-}: {
-    entry: LedgerEntry;
-    spool?: Spool;
-    onEdit: () => void;
-    onDelete: () => void;
-}) {
-    const details = entryDetails(entry);
-    const estimatedCost =
-        entry.type === "print" && spool
-            ? getEstimatedPrintCost(spool, entry.record)
-            : undefined;
-    return (
-        <Table.Tr>
-            <Table.Td>
-                <Group gap="sm" wrap="nowrap">
-                    <Badge variant="light" color={details.color}>
-                        {details.badge}
-                    </Badge>
-                    <div>
-                        <Text fw={600} size="sm">
-                            {details.title}
-                        </Text>
-                        <Text size="xs" c="dimmed">
-                            {details.detail}
-                        </Text>
-                    </div>
-                </Group>
-            </Table.Td>
-            <Table.Td>
-                <Text size="sm">{spool?.name ?? "Missing spool"}</Text>
-            </Table.Td>
-            <Table.Td>
-                <Text size="sm" c="dimmed">
-                    {formatDateTime(entry.occurredAt)}
-                </Text>
-            </Table.Td>
-            <Table.Td ta="right">
-                <Text
-                    fw={700}
-                    c={entry.type === "print" ? "orange.8" : undefined}
-                >
-                    {details.change}
-                </Text>
-            </Table.Td>
-            <Table.Td ta="right">
-                <Text
-                    size="sm"
-                    fw={600}
-                    c={estimatedCost === undefined ? "dimmed" : undefined}
-                >
-                    {entry.type === "print"
-                        ? estimatedCost !== undefined
-                            ? formatMoney(
-                                  estimatedCost,
-                                  spool?.purchaseCurrency,
-                              )
-                            : "Not priced"
-                        : "—"}
-                </Text>
-            </Table.Td>
-            <Table.Td>
-                <EntryMenu entry={entry} onEdit={onEdit} onDelete={onDelete} />
-            </Table.Td>
-        </Table.Tr>
-    );
-}
-
-function HistoryCard({
-    entry,
-    spool,
-    onEdit,
-    onDelete,
-}: {
-    entry: LedgerEntry;
-    spool?: Spool;
-    onEdit: () => void;
-    onDelete: () => void;
-}) {
-    const details = entryDetails(entry);
-    const estimatedCost =
-        entry.type === "print" && spool
-            ? getEstimatedPrintCost(spool, entry.record)
-            : undefined;
-    return (
-        <Card withBorder radius="lg">
-            <Group justify="space-between" align="flex-start" wrap="nowrap">
-                <div>
-                    <Badge variant="light" color={details.color} mb="xs">
-                        {details.badge}
-                    </Badge>
-                    <Text fw={700}>{details.title}</Text>
+    const columns = useMemo<MRT_ColumnDef<LedgerEntry>[]>(
+        () => [
+            {
+                id: "activity",
+                accessorFn: (entry) => entryDetails(entry).title,
+                header: "Activity",
+                Cell: ({ row }) => {
+                    const details = entryDetails(row.original);
+                    return (
+                        <Group gap="sm" wrap="nowrap">
+                            <Badge variant="light" color={details.color}>
+                                {details.badge}
+                            </Badge>
+                            <div>
+                                <Text fw={600} size="sm">
+                                    {details.title}
+                                </Text>
+                                <Text size="xs" c="dimmed">
+                                    {details.detail}
+                                </Text>
+                            </div>
+                        </Group>
+                    );
+                },
+            },
+            {
+                id: "spool",
+                accessorFn: (entry) =>
+                    spoolsById.get(entry.record.spoolId)?.name ??
+                    "Missing spool",
+                header: "Spool",
+            },
+            {
+                accessorKey: "occurredAt",
+                header: "Date",
+                Cell: ({ cell }) => (
                     <Text size="sm" c="dimmed">
-                        {spool?.name ?? "Missing spool"} · {details.detail}
+                        {formatDateTime(cell.getValue<string>())}
                     </Text>
-                    {entry.type === "print" ? (
-                        <Text size="xs" c="dimmed" mt={5}>
-                            Estimated material cost:{" "}
-                            <Text
-                                span
-                                fw={700}
-                                c={
-                                    estimatedCost === undefined
-                                        ? "dimmed"
-                                        : undefined
-                                }
-                            >
-                                {estimatedCost !== undefined
+                ),
+            },
+            {
+                id: "change",
+                accessorFn: entryChangeValue,
+                header: "Change",
+                Cell: ({ row }) => (
+                    <Text
+                        fw={500}
+                        c={
+                            row.original.type === "print"
+                                ? "orange.8"
+                                : undefined
+                        }
+                    >
+                        {entryDetails(row.original).change}
+                    </Text>
+                ),
+            },
+            {
+                id: "estimated-cost",
+                accessorFn: (entry) => {
+                    if (entry.type !== "print") return undefined;
+                    const spool = spoolsById.get(entry.record.spoolId);
+                    return spool
+                        ? getEstimatedPrintCost(spool, entry.record)
+                        : undefined;
+                },
+                header: "Est. material cost",
+                Cell: ({ row }) => {
+                    const entry = row.original;
+                    const spool = spoolsById.get(entry.record.spoolId);
+                    const estimatedCost =
+                        entry.type === "print" && spool
+                            ? getEstimatedPrintCost(spool, entry.record)
+                            : undefined;
+                    return (
+                        <Text
+                            size="sm"
+                            fw={600}
+                            c={
+                                estimatedCost === undefined
+                                    ? "dimmed"
+                                    : undefined
+                            }
+                        >
+                            {entry.type === "print"
+                                ? estimatedCost !== undefined
                                     ? formatMoney(
                                           estimatedCost,
                                           spool?.purchaseCurrency,
                                       )
-                                    : "Not priced"}
-                            </Text>
+                                    : "Not priced"
+                                : "—"}
                         </Text>
-                    ) : null}
-                </div>
-                <EntryMenu entry={entry} onEdit={onEdit} onDelete={onDelete} />
-            </Group>
-            <Group justify="space-between" mt="md">
-                <Text size="xs" c="dimmed">
-                    {formatDateTime(entry.occurredAt)}
-                </Text>
-                <Text fw={700}>{details.change}</Text>
-            </Group>
-        </Card>
+                    );
+                },
+            },
+        ],
+        [spoolsById],
     );
+
+    return (
+        <MantineReactTable
+            columns={columns}
+            data={entries}
+            enableBottomToolbar={false}
+            enableColumnActions={false}
+            enableColumnFilters={false}
+            enableDensityToggle={false}
+            enableFullScreenToggle={false}
+            enableGlobalFilter={false}
+            enablePagination={false}
+            enableRowActions
+            enableTopToolbar={false}
+            getRowId={(entry) => `${entry.type}-${entry.record.id}`}
+            mantineTableContainerProps={{ mah: 640 }}
+            positionActionsColumn="last"
+            renderRowActionMenuItems={({ row }) => (
+                <>
+                    <Menu.Item
+                        leftSection={<IconEdit size={16} />}
+                        onClick={() => onEdit(row.original)}
+                    >
+                        Edit
+                    </Menu.Item>
+                    <Menu.Item
+                        color="red"
+                        leftSection={<IconTrash size={16} />}
+                        onClick={() => onDelete(row.original)}
+                    >
+                        Delete
+                    </Menu.Item>
+                </>
+            )}
+        />
+    );
+}
+
+function entryChangeValue(entry: LedgerEntry) {
+    if (entry.type === "print") return -getPrintTotal(entry.record);
+    if (entry.record.kind === "set" || entry.record.kind === "add")
+        return entry.record.amountG;
+    return -entry.record.amountG;
 }
