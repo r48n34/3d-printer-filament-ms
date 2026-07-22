@@ -38,7 +38,10 @@ import {
     IconScale,
     IconTrash,
 } from "@tabler/icons-react";
-import { MantineReactTable, type MRT_ColumnDef } from "mantine-react-table-open";
+import {
+    MantineReactTable,
+    type MRT_ColumnDef,
+} from "mantine-react-table-open";
 import { useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
@@ -124,10 +127,6 @@ export function FilamentDetailPage() {
     );
     const entries = getLedgerEntries(spoolPrints, spoolAdjustments).reverse();
     const balance = balanceBySpool.get(spool.id) ?? spool.initialWeightG;
-    const printedWeight = spoolPrints.reduce(
-        (sum, record) => sum + getPrintTotal(record),
-        0,
-    );
     const estimatedCost =
         spool.purchasePrice === undefined
             ? undefined
@@ -266,32 +265,12 @@ export function FilamentDetailPage() {
                 </Alert>
             ) : null}
 
-            <SimpleGrid cols={{ base: 1, xs: 2, lg: 2 }}>
-                <UsageBalanceCard
-                    balance={balance}
-                    initialWeight={spool.initialWeightG}
-                    printedWeight={printedWeight}
-                    printCount={spoolPrints.length}
-                    progress={progress}
-                    spoolName={spool.name}
-                />
-                <SummaryCard
-                    icon={<IconCoin size={21} />}
-                    label="Est. material cost"
-                    value={
-                        estimatedCost !== undefined
-                            ? formatMoney(estimatedCost, spool.purchaseCurrency)
-                            : "Not priced"
-                    }
-                    detail="Based on recorded prints"
-                />
-                {/* <SummaryCard
-                    icon={<IconHistory size={21} />}
-                    label="Related activity"
-                    value={String(entries.length)}
-                    detail={`${spoolAdjustments.length} stock adjustments`}
-                /> */}
-            </SimpleGrid>
+            <UsageBalanceCard
+                balance={balance}
+                printCount={spoolPrints.length}
+                progress={progress}
+                spoolName={spool.name}
+            />
 
             <Grid>
                 <Grid.Col span={12} order={2}>
@@ -359,6 +338,19 @@ export function FilamentDetailPage() {
                                                 ? `${formatMoney(spool.purchasePrice / spool.initialWeightG, spool.purchaseCurrency)} per gram`
                                                 : "Add a price to calculate print costs"
                                         }
+                                    />
+                                    <DetailItem
+                                        icon={<IconCoin size={17} />}
+                                        label="Est. material cost"
+                                        value={
+                                            estimatedCost !== undefined
+                                                ? formatMoney(
+                                                      estimatedCost,
+                                                      spool.purchaseCurrency,
+                                                  )
+                                                : "Not priced"
+                                        }
+                                        note="Based on recorded prints"
                                     />
                                     <DetailItem
                                         icon={<IconCalendar size={17} />}
@@ -495,15 +487,11 @@ export function FilamentDetailPage() {
 
 function UsageBalanceCard({
     balance,
-    initialWeight,
-    printedWeight,
     printCount,
     progress,
     spoolName,
 }: {
     balance: number;
-    initialWeight: number;
-    printedWeight: number;
     printCount: number;
     progress: number;
     spoolName: string;
@@ -521,19 +509,19 @@ function UsageBalanceCard({
                         c="dimmed"
                         lts={0.7}
                     >
-                        Printed usage
+                        Remaining
                     </Text>
                     <Text fz={24} fw={800} mt={5}>
-                        {formatGrams(printedWeight)}
+                        {formatGrams(balance)}
                     </Text>
                     <Text size="xs" c="dimmed" mt={2}>
                         {printCount} print{" "}
                         {printCount === 1 ? "record" : "records"}
                     </Text>
-                    <Text size="xs" c="dimmed" mt="sm">
+                    {/* <Text size="xs" c="dimmed" mt="sm">
                         {formatGrams(balance)} remaining from{" "}
                         {formatGrams(initialWeight)}
-                    </Text>
+                    </Text> */}
                 </div>
                 <RingProgress
                     aria-label={`${spoolName} remaining filament`}
@@ -547,52 +535,6 @@ function UsageBalanceCard({
                         </Text>
                     }
                 />
-            </Group>
-        </Paper>
-    );
-}
-
-function SummaryCard({
-    icon,
-    label,
-    value,
-    detail,
-    color = "copper",
-}: {
-    icon: React.ReactNode;
-    label: string;
-    value: string;
-    detail: string;
-    color?: string;
-}) {
-    return (
-        <Paper withBorder radius="lg" p="lg">
-            <Group justify="space-between" align="flex-start" wrap="nowrap">
-                <div>
-                    <Text
-                        size="xs"
-                        tt="uppercase"
-                        fw={500}
-                        c="dimmed"
-                        lts={0.7}
-                    >
-                        {label}
-                    </Text>
-                    <Text
-                        fz={24}
-                        fw={800}
-                        mt={5}
-                        c={color === "red" ? "red" : undefined}
-                    >
-                        {value}
-                    </Text>
-                    <Text size="xs" c="dimmed" mt={2}>
-                        {detail}
-                    </Text>
-                </div>
-                <ThemeIcon variant="light" color={color} size={40} radius="md">
-                    {icon}
-                </ThemeIcon>
             </Group>
         </Paper>
     );
@@ -695,13 +637,55 @@ function HistoryActivityTable({
                 },
             },
             {
-                id: "details",
-                accessorFn: (entry) => entry.type,
-                header: "Details",
+                id: "quantity",
+                accessorFn: (entry) =>
+                    entry.type === "print" ? entry.record.quantity : 0,
+                header: "Quantity",
+                Cell: ({ row }) => (
+                    <Text size="sm">
+                        {row.original.type === "print"
+                            ? row.original.record.quantity
+                            : "—"}
+                    </Text>
+                ),
+            },
+            {
+                id: "weight-per-item",
+                accessorFn: (entry) =>
+                    entry.type === "print" ? entry.record.gramsPerItem : 0,
+                header: "Weight / item",
+                Cell: ({ row }) => (
+                    <Text size="sm">
+                        {row.original.type === "print"
+                            ? formatGrams(row.original.record.gramsPerItem)
+                            : "—"}
+                    </Text>
+                ),
+            },
+            {
+                id: "estimated-cost",
+                accessorFn: (entry) =>
+                    entry.type === "print"
+                        ? (getEstimatedPrintCost(spool, entry.record) ?? 0)
+                        : 0,
+                header: "Est. material cost",
                 Cell: ({ row }) => {
+                    const entry = row.original;
+                    const printCost =
+                        entry.type === "print"
+                            ? getEstimatedPrintCost(spool, entry.record)
+                            : undefined;
+
                     return (
                         <Text size="sm" c="dimmed">
-                            {getActivityDetail(row.original, spool)}
+                            {entry.type !== "print"
+                                ? "—"
+                                : printCost !== undefined
+                                  ? formatMoney(
+                                        printCost,
+                                        spool.purchaseCurrency,
+                                    )
+                                  : "Not priced"}
                         </Text>
                     );
                 },
@@ -771,17 +755,6 @@ function getActivityLabel(entry: LedgerEntry) {
     return entry.type === "print"
         ? entry.record.projectName
         : entry.record.reason;
-}
-
-function getActivityDetail(entry: LedgerEntry, spool: Spool) {
-    if (entry.type !== "print") {
-        return entry.record.kind === "set"
-            ? "Measured remaining weight"
-            : `${entry.record.kind === "add" ? "Added to" : "Removed from"} stock`;
-    }
-
-    const printCost = getEstimatedPrintCost(spool, entry.record);
-    return `${entry.record.quantity} × ${formatGrams(entry.record.gramsPerItem)} · Est. ${printCost !== undefined ? formatMoney(printCost, spool.purchaseCurrency) : "not priced"}`;
 }
 
 function getActivityChangeValue(entry: LedgerEntry) {
