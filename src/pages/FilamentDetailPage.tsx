@@ -31,14 +31,14 @@ import {
     IconCoin,
     IconDisc,
     IconEdit,
-    IconHistory,
+    // IconHistory,
     IconPalette,
     IconPrinter,
     IconRestore,
     IconScale,
     IconTrash,
 } from "@tabler/icons-react";
-import { MantineReactTable, type MRT_ColumnDef } from "mantine-react-table";
+import { MantineReactTable, type MRT_ColumnDef } from "mantine-react-table-open";
 import { useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
@@ -266,7 +266,7 @@ export function FilamentDetailPage() {
                 </Alert>
             ) : null}
 
-            <SimpleGrid cols={{ base: 1, xs: 2, lg: 3 }}>
+            <SimpleGrid cols={{ base: 1, xs: 2, lg: 2 }}>
                 <UsageBalanceCard
                     balance={balance}
                     initialWeight={spool.initialWeightG}
@@ -285,12 +285,12 @@ export function FilamentDetailPage() {
                     }
                     detail="Based on recorded prints"
                 />
-                <SummaryCard
+                {/* <SummaryCard
                     icon={<IconHistory size={21} />}
                     label="Related activity"
                     value={String(entries.length)}
                     detail={`${spoolAdjustments.length} stock adjustments`}
-                />
+                /> */}
             </SimpleGrid>
 
             <Grid>

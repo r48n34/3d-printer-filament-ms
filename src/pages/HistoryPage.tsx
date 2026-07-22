@@ -21,7 +21,7 @@ import {
     IconTrash,
 } from "@tabler/icons-react";
 import dayjs from "dayjs";
-import { MantineReactTable, type MRT_ColumnDef } from "mantine-react-table";
+import { MantineReactTable, type MRT_ColumnDef } from "mantine-react-table-open";
 import { useMemo, useState } from "react";
 
 import "mantine-react-table/styles.css";

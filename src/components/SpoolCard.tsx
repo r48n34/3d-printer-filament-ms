@@ -12,7 +12,6 @@ import {
 } from "@mantine/core";
 import {
     IconArchive,
-    IconChevronRight,
     IconDisc,
     IconDots,
     IconEdit,
@@ -57,8 +56,9 @@ export function SpoolCard({
                     (event.target as HTMLElement).closest(
                         "button, a, [role='menuitem']",
                     )
-                )
+                ) {
                     return;
+                }
                 onOpen();
             }}
             onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
@@ -147,34 +147,26 @@ export function SpoolCard({
                 </Group>
 
                 <div>
-                    <Group justify="space-between" mb={7}>
-                        <Text size="sm" c="dimmed">
-                            Remaining
-                        </Text>
-                        <Text fw={500} c={balance < 0 ? "red" : undefined}>
-                            {formatGrams(balance)}
-                        </Text>
-                    </Group>
-                    <Progress
-                        value={progress}
-                        color={color}
-                        size="sm"
-                        radius="xl"
-                        aria-label={`${spool.name} remaining filament`}
-                    />
-                    <Text size="xs" c="dimmed" mt={7}>
-                        Started with {formatGrams(spool.initialWeightG)}
-                        {spool.brand ? ` · ${spool.brand}` : ""}
-                    </Text>
+                    <Progress.Root size="xl" radius="xl">
+                        <Progress.Section value={progress} color={color}>
+                            <Progress.Label>
+                                <Text fz={12}>
+                                    {formatGrams(balance)} {"/"}{" "}
+                                    {formatGrams(spool.initialWeightG)} (
+                                    {Math.round(progress)}%)
+                                </Text>
+                            </Progress.Label>
+                        </Progress.Section>
+                    </Progress.Root>
                 </div>
-                {onOpen ? (
+                {/* {onOpen ? (
                     <Group justify="space-between" className="spool-card-link">
                         <Text size="xs" fw={500} c="copper.8">
                             View spool details
                         </Text>
                         <IconChevronRight size={16} />
                     </Group>
-                ) : null}
+                ) : null} */}
             </Stack>
         </Card>
     );
