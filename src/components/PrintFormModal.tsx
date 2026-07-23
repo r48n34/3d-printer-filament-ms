@@ -228,7 +228,7 @@ export function PrintFormModal({
                             <Text size="sm" fw={500} mb={7}>
                                 Total used
                             </Text>
-                            <Text className="calculated-value">
+                            <Text >
                                 {formatGrams(total)}
                             </Text>
                         </Grid.Col>
@@ -236,7 +236,7 @@ export function PrintFormModal({
                             <Text size="sm" fw={500} mb={7}>
                                 Est. material cost
                             </Text>
-                            <Text className="calculated-value">
+                            <Text >
                                 {estimatedCost !== undefined
                                     ? formatMoney(
                                           estimatedCost,
