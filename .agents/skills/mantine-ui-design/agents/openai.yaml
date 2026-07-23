@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mantine UI Design"
+  short_description: "Design clean, accessible Mantine interfaces"
+  default_prompt: "Use $mantine-ui-design to create a clean, modern Mantine interface for this request."

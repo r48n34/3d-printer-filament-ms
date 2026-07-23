@@ -3,10 +3,12 @@ import {
     Accordion,
     Alert,
     Badge,
+    Box,
     Button,
     Card,
     ColorSwatch,
     Divider,
+    Flex,
     Grid,
     Group,
     Menu,
@@ -48,7 +50,6 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import "mantine-react-table/styles.css";
 
 import { AdjustmentFormModal } from "../components/AdjustmentFormModal";
-import { PageHeader } from "../components/PageHeader";
 import { PrintFormModal } from "../components/PrintFormModal";
 import { SpoolFormModal } from "../components/SpoolFormModal";
 import { db } from "../db";
@@ -72,6 +73,37 @@ import {
     formatGrams,
     formatMoney,
 } from "../utils/format";
+
+function PageHeader({
+    title,
+    description,
+    actions,
+}: {
+    title: React.ReactNode;
+    description: string;
+    actions?: React.ReactNode;
+}) {
+    return (
+        <Flex
+            justify="space-between"
+            align={{ base: "stretch", sm: "flex-end" }}
+            direction={{ base: "column", sm: "row" }}
+            gap="md"
+        >
+            <Stack gap={3}>
+                <Title className="page-title" order={1}>
+                    {title}
+                </Title>
+                <Text c="dimmed" size="sm">
+                    {description}
+                </Text>
+            </Stack>
+            {actions ? (
+                <Box className="page-header-actions">{actions}</Box>
+            ) : null}
+        </Flex>
+    );
+}
 
 export function FilamentDetailPage() {
     const { spoolId } = useParams();
@@ -131,10 +163,10 @@ export function FilamentDetailPage() {
         spool.purchasePrice === undefined
             ? undefined
             : spoolPrints.reduce(
-                  (sum, record) =>
-                      sum + (getEstimatedPrintCost(spool, record) ?? 0),
-                  0,
-              );
+                (sum, record) =>
+                    sum + (getEstimatedPrintCost(spool, record) ?? 0),
+                0,
+            );
     const progress = getProgressValue(balance, spool.initialWeightG);
 
     const openPrint = (record?: PrintRecord) => {
@@ -210,7 +242,23 @@ export function FilamentDetailPage() {
             </Button>
 
             <PageHeader
-                title={spool.name}
+                title={
+                    <span
+                        style={{
+                            alignItems: "center",
+                            display: "inline-flex",
+                            gap: "var(--mantine-spacing-sm)",
+                        }}
+                    >
+                        <ThemeIcon size="xl" color={spool.color || "var(--mantine-color-gray-6)"} variant="default">
+                            <IconDisc
+                                size={30}
+                                color={spool.color || "var(--mantine-color-gray-6)"}
+                            />
+                        </ThemeIcon>
+                        <span>{spool.name}</span>
+                    </span>
+                }
                 description={`${getMaterialName(spool)}${spool.brand ? ` · ${spool.brand}` : ""} · Added ${formatDate(spool.createdAt)}`}
                 actions={
                     <Group gap="sm">
@@ -328,9 +376,9 @@ export function FilamentDetailPage() {
                                         value={
                                             spool.purchasePrice !== undefined
                                                 ? formatMoney(
-                                                      spool.purchasePrice,
-                                                      spool.purchaseCurrency,
-                                                  )
+                                                    spool.purchasePrice,
+                                                    spool.purchaseCurrency,
+                                                )
                                                 : "Not provided"
                                         }
                                         note={
@@ -345,9 +393,9 @@ export function FilamentDetailPage() {
                                         value={
                                             estimatedCost !== undefined
                                                 ? formatMoney(
-                                                      estimatedCost,
-                                                      spool.purchaseCurrency,
-                                                  )
+                                                    estimatedCost,
+                                                    spool.purchaseCurrency,
+                                                )
                                                 : "Not priced"
                                         }
                                         note="Based on recorded prints"
@@ -681,11 +729,11 @@ function HistoryActivityTable({
                             {entry.type !== "print"
                                 ? "—"
                                 : printCost !== undefined
-                                  ? formatMoney(
+                                    ? formatMoney(
                                         printCost,
                                         spool.purchaseCurrency,
                                     )
-                                  : "Not priced"}
+                                    : "Not priced"}
                         </Text>
                     );
                 },

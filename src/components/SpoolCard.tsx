@@ -1,21 +1,14 @@
 import {
-    ActionIcon,
     Badge,
     Card,
     Group,
-    Menu,
     Progress,
     Stack,
     Text,
     ThemeIcon,
-    Tooltip,
 } from "@mantine/core";
 import {
-    IconArchive,
     IconDisc,
-    IconDots,
-    IconEdit,
-    IconRestore,
 } from "@tabler/icons-react";
 import type { KeyboardEvent, MouseEvent as ReactMouseEvent } from "react";
 
@@ -26,16 +19,16 @@ import { formatGrams } from "../utils/format";
 interface SpoolCardProps {
     spool: Spool;
     balance: number;
-    onEdit: () => void;
-    onArchive: () => void;
+    // onEdit: () => void;
+    // onArchive: () => void;
     onOpen?: () => void;
 }
 
 export function SpoolCard({
     spool,
     balance,
-    onEdit,
-    onArchive,
+    // onEdit,
+    // onArchive,
     onOpen,
 }: SpoolCardProps) {
     const progress = getProgressValue(balance, spool.initialWeightG);
@@ -76,7 +69,7 @@ export function SpoolCard({
                             size={42}
                             radius="md"
                             variant="light"
-                            color="copper"
+                            color={ spool.color || "copper"}
                             style={
                                 spool.color ? { color: spool.color } : undefined
                             }
@@ -103,52 +96,17 @@ export function SpoolCard({
                             </Group>
                         </div>
                     </Group>
-                    <Menu position="bottom-end" shadow="md">
-                        <Menu.Target>
-                            <Tooltip label="Spool actions">
-                                <ActionIcon
-                                    variant="subtle"
-                                    color="gray"
-                                    aria-label={`Actions for ${spool.name}`}
-                                >
-                                    <IconDots size={19} />
-                                </ActionIcon>
-                            </Tooltip>
-                        </Menu.Target>
-                        <Menu.Dropdown>
-                            <Menu.Item
-                                leftSection={<IconEdit size={16} />}
-                                onClick={(event) => {
-                                    event.stopPropagation();
-                                    onEdit();
-                                }}
-                            >
-                                Edit spool
-                            </Menu.Item>
-                            <Menu.Item
-                                leftSection={
-                                    spool.archivedAt ? (
-                                        <IconRestore size={16} />
-                                    ) : (
-                                        <IconArchive size={16} />
-                                    )
-                                }
-                                onClick={(event) => {
-                                    event.stopPropagation();
-                                    onArchive();
-                                }}
-                            >
-                                {spool.archivedAt
-                                    ? "Restore spool"
-                                    : "Archive spool"}
-                            </Menu.Item>
-                        </Menu.Dropdown>
-                    </Menu>
+
+                    {spool.purchaseDate && (
+                        <Badge color={ spool.color || "copper"} radius={"md"}>
+                            {spool.purchaseDate}
+                        </Badge>
+                    )}
                 </Group>
 
                 <div>
                     <Progress.Root size="xl" radius="xl">
-                        <Progress.Section value={progress} color={color}>
+                        <Progress.Section value={progress} color={spool.color || color}>
                             <Progress.Label>
                                 <Text fz={12}>
                                     {formatGrams(balance)} {"/"}{" "}

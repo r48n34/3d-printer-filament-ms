@@ -1,4 +1,5 @@
 import {
+    Autocomplete,
     Button,
     ColorInput,
     Grid,
@@ -7,17 +8,21 @@ import {
     NumberInput,
     Select,
     Stack,
+    Switch,
     Textarea,
     TextInput,
 } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { useForm } from "@mantine/form";
+import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
+import dayjs from "dayjs";
+import { useLiveQuery } from "dexie-react-hooks";
 import { useEffect } from "react";
 
 import { createId, db } from "../db";
 import { type Material, MATERIALS, type Spool } from "../types";
-import dayjs from "dayjs";
+import { getBrandSuggestions } from "../utils/brands";
 
 interface SpoolFormValues {
     name: string;
@@ -30,6 +35,7 @@ interface SpoolFormValues {
     purchasePrice: number | string;
     purchaseCurrency: string;
     notes: string;
+    archived: boolean;
 }
 
 interface SpoolFormModalProps {
@@ -49,6 +55,7 @@ const getInitialValues = (spool?: Spool): SpoolFormValues => ({
     purchasePrice: spool?.purchasePrice ?? "",
     purchaseCurrency: spool?.purchaseCurrency ?? "HKD",
     notes: spool?.notes ?? "",
+    archived: Boolean(spool?.archivedAt),
 });
 
 const clean = (value: string) => value.trim() || undefined;
@@ -58,6 +65,11 @@ export function SpoolFormModal({
     onClose,
     spool,
 }: SpoolFormModalProps) {
+    const brandSuggestions = useLiveQuery(
+        async () => getBrandSuggestions(await db.spools.toArray()),
+        [],
+        [],
+    );
     const form = useForm<SpoolFormValues>({
         mode: "controlled",
         initialValues: getInitialValues(spool),
@@ -84,27 +96,32 @@ export function SpoolFormModal({
         // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [opened, spool?.id]);
 
-    const save = form.onSubmit(async (values) => {
+    const saveSpool = async (values: SpoolFormValues) => {
         const now = new Date().toISOString();
         const next: Spool = {
             id: spool?.id ?? createId(),
             name: values.name.trim(),
             initialWeightG: Number(values.initialWeightG),
             material: values.material as Material,
-            customMaterial: values.material === "Other"
-                ? clean(values.customMaterial)
-                : undefined,
+            customMaterial:
+                values.material === "Other"
+                    ? clean(values.customMaterial)
+                    : undefined,
             color: clean(values.color),
             brand: clean(values.brand),
             purchaseDate: values.purchaseDate ?? undefined,
-            purchasePrice: values.purchasePrice === ""
-                ? undefined
-                : Number(values.purchasePrice),
-            purchaseCurrency: values.purchasePrice === ""
-                ? undefined
-                : values.purchaseCurrency.trim(),
+            purchasePrice:
+                values.purchasePrice === ""
+                    ? undefined
+                    : Number(values.purchasePrice),
+            purchaseCurrency:
+                values.purchasePrice === ""
+                    ? undefined
+                    : values.purchaseCurrency.trim(),
             notes: clean(values.notes),
-            archivedAt: spool?.archivedAt,
+            archivedAt: values.archived
+                ? (spool?.archivedAt ?? now)
+                : undefined,
             createdAt: spool?.createdAt ?? now,
             updatedAt: now,
         };
@@ -116,6 +133,26 @@ export function SpoolFormModal({
             message: `${next.name} is ready to track.`,
         });
         onClose();
+    };
+
+    const save = form.onSubmit((values) => {
+        const spoolToArchive = spool;
+        const isBeingArchived =
+            spoolToArchive !== undefined &&
+            values.archived &&
+            !spoolToArchive.archivedAt;
+
+        if (!isBeingArchived || !spoolToArchive) {
+            void saveSpool(values);
+            return;
+        }
+
+        modals.openConfirmModal({
+            title: "Archive this spool?",
+            children: `New prints will be disabled, but all data and history for ${spoolToArchive.name} will remain available.`,
+            labels: { confirm: "Archive spool", cancel: "Cancel" },
+            onConfirm: () => void saveSpool(values),
+        });
     });
 
     return (
@@ -178,36 +215,32 @@ export function SpoolFormModal({
                         </Grid.Col>
 
                         <Grid.Col span={{ base: 12, sm: 6 }}>
-                            {form.values.material === "Other"
-                                ? (
-                                    <TextInput
-                                        label="Custom material"
-                                        placeholder="e.g. PCTG"
-                                        withAsterisk
-                                        {...form.getInputProps(
-                                            "customMaterial",
-                                        )}
-                                    />
-                                )
-                                : (
-                                    <TextInput
-                                        label="Brand"
-                                        placeholder="Optional"
-                                        {...form.getInputProps("brand")}
-                                    />
-                                )}
+                            {form.values.material === "Other" ? (
+                                <TextInput
+                                    label="Custom material"
+                                    placeholder="e.g. PCTG"
+                                    withAsterisk
+                                    {...form.getInputProps("customMaterial")}
+                                />
+                            ) : (
+                                <Autocomplete
+                                    label="Brand"
+                                    placeholder="Type or select a brand"
+                                    data={brandSuggestions}
+                                    {...form.getInputProps("brand")}
+                                />
+                            )}
                         </Grid.Col>
                     </Grid>
 
-                    {form.values.material === "Other"
-                        ? (
-                            <TextInput
-                                label="Brand"
-                                placeholder="Optional"
-                                {...form.getInputProps("brand")}
-                            />
-                        )
-                        : null}
+                    {form.values.material === "Other" ? (
+                        <Autocomplete
+                            label="Brand"
+                            placeholder="Type or select a brand"
+                            data={brandSuggestions}
+                            {...form.getInputProps("brand")}
+                        />
+                    ) : null}
 
                     <Grid>
                         <Grid.Col span={{ base: 12, sm: 6 }}>
@@ -241,6 +274,19 @@ export function SpoolFormModal({
                         minRows={2}
                         {...form.getInputProps("notes")}
                     />
+                    {spool ? (
+                        <Switch
+                            label="Archive spool"
+                            description="Archived spools cannot be used for new prints."
+                            checked={form.values.archived}
+                            onChange={(event) =>
+                                form.setFieldValue(
+                                    "archived",
+                                    event.currentTarget.checked,
+                                )
+                            }
+                        />
+                    ) : null}
                     <Group justify="flex-end" mt="xs">
                         <Button variant="default" onClick={onClose}>
                             Cancel

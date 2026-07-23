@@ -1,5 +1,4 @@
 :root {
-    color-scheme: light;
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
@@ -13,7 +12,7 @@ body,
 }
 
 body {
-    background: #f7f5f1;
+    background: var(--app-background);
 }
 
 button,

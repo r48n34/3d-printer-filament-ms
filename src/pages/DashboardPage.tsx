@@ -94,14 +94,14 @@ export function DashboardPage() {
                             View all
                         </Button>
                     </Group>
-                    <SimpleGrid cols={{ base: 1, sm: 2, xl: 3 }}>
+                    <SimpleGrid cols={{ base: 1, sm: 1, md: 1, lg: 2, xl: 3 }}>
                         {activeSpools.slice(0, 6).map((spool) => (
                             <div key={spool.id}>
                                 <SpoolCard
                                     spool={spool}
                                     balance={balanceBySpool.get(spool.id) ?? 0}
-                                    onEdit={() => navigate("/filaments")}
-                                    onArchive={() => navigate("/filaments")}
+                                    // onEdit={() => navigate("/filaments")}
+                                    // onArchive={() => navigate("/filaments")}
                                     onOpen={() =>
                                         navigate(`/filaments/${spool.id}`)
                                     }

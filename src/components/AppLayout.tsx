@@ -16,6 +16,8 @@ import {
 } from "@tabler/icons-react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 
+import { ColorSchemeToggle } from "./ColorSchemeToggle";
+
 const LINKS = [
     { to: "/", label: "Overview", icon: IconGauge },
     { to: "/filaments", label: "Filaments", icon: IconDisc },
@@ -36,13 +38,7 @@ export function AppLayout() {
                 }}
                 padding={{ base: "md", sm: "xl" }}
             >
-                <AppShell.Header
-                    className="app-header"
-                    style={{
-                        backdropFilter: "blur(8px)",
-                        backgroundColor: "rgba(0,0,0,0)",
-                    }}
-                >
+                <AppShell.Header className="app-header">
                     <Group
                         h="100%"
                         px={{ base: "md", sm: "xl" }}
@@ -66,7 +62,7 @@ export function AppLayout() {
                                 </Text>
                             </div>
                         </Group>
-                        
+                        <ColorSchemeToggle />
                     </Group>
                 </AppShell.Header>
 
@@ -85,9 +81,10 @@ export function AppLayout() {
                                 Workshop
                             </Text>
                             {LINKS.map(({ to, label, icon: Icon }) => {
-                                const active = to === "/"
-                                    ? location.pathname === "/"
-                                    : location.pathname.startsWith(to);
+                                const active =
+                                    to === "/"
+                                        ? location.pathname === "/"
+                                        : location.pathname.startsWith(to);
                                 return (
                                     <MantineNavLink
                                         key={to}
@@ -126,9 +123,10 @@ export function AppLayout() {
                 aria-label="Main navigation"
             >
                 {LINKS.map(({ to, label, icon: Icon }) => {
-                    const active = to === "/"
-                        ? location.pathname === "/"
-                        : location.pathname.startsWith(to);
+                    const active =
+                        to === "/"
+                            ? location.pathname === "/"
+                            : location.pathname.startsWith(to);
                     return (
                         <NavLink
                             key={to}
