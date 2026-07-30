@@ -20,6 +20,8 @@ import { IconAlertTriangle } from "@tabler/icons-react";
 import dayjs from "dayjs";
 import { useEffect } from "react";
 
+import "@mantine/dates/styles.css";
+
 import { savePrintRecord } from "../services/printRecords";
 import type { AdjustmentRecord, PrintRecord, Spool } from "../types";
 import {
@@ -45,7 +47,7 @@ export interface PrintFormPreset {
     gramsPerItem: number;
 }
 
-interface PrintFormModalProps {
+export interface PrintFormModalProps {
     opened: boolean;
     onClose: () => void;
     spools: Spool[];

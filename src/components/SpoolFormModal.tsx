@@ -21,6 +21,8 @@ import dayjs from "dayjs";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useEffect } from "react";
 
+import "@mantine/dates/styles.css";
+
 import { createId, db } from "../db";
 import { type Material, MATERIALS, type Spool } from "../types";
 import { getBrandSuggestions } from "../utils/brands";
@@ -39,7 +41,7 @@ interface SpoolFormValues {
     archived: boolean;
 }
 
-interface SpoolFormModalProps {
+export interface SpoolFormModalProps {
     opened: boolean;
     onClose: () => void;
     spool?: Spool;
@@ -169,7 +171,6 @@ export function SpoolFormModal({
         >
             <form onSubmit={save}>
                 <Stack gap="md">
-                    
                     <Grid>
                         <Grid.Col span={{ base: 12, sm: 6 }}>
                             <TextInput

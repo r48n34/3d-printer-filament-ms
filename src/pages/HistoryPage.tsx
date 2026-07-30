@@ -30,16 +30,17 @@ import {
 import { useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
+import "@mantine/dates/styles.css";
 import "mantine-react-table/styles.css";
 
-import { AdjustmentFormModal } from "../components/AdjustmentFormModal";
 import { EmptyState } from "../components/EmptyState";
 import { InventoryErrorAlert } from "../components/InventoryErrorAlert";
-import { PageHeader } from "../components/PageHeader";
 import {
-    PrintFormModal,
-    type PrintFormPreset,
-} from "../components/PrintFormModal";
+    LazyAdjustmentFormModal,
+    LazyPrintFormModal,
+} from "../components/LazyInventoryModals";
+import { PageHeader } from "../components/PageHeader";
+import type { PrintFormPreset } from "../components/PrintFormModal";
 import { db } from "../db";
 import { useInventoryData } from "../hooks/useInventoryData";
 import type {
@@ -273,7 +274,7 @@ export function HistoryPage() {
                 />
             )}
 
-            <PrintFormModal
+            <LazyPrintFormModal
                 opened={printOpened}
                 onClose={printModal.close}
                 spools={spools}
@@ -282,7 +283,7 @@ export function HistoryPage() {
                 record={editingPrint}
                 preset={printPreset}
             />
-            <AdjustmentFormModal
+            <LazyAdjustmentFormModal
                 opened={adjustmentOpened}
                 onClose={adjustmentModal.close}
                 spools={spools}

@@ -18,6 +18,8 @@ import { IconAlertTriangle } from "@tabler/icons-react";
 import dayjs from "dayjs";
 import { useEffect } from "react";
 
+import "@mantine/dates/styles.css";
+
 import { createId, db } from "../db";
 import type {
     AdjustmentKind,
@@ -36,7 +38,7 @@ interface AdjustmentFormValues {
     adjustedAt: string;
 }
 
-interface AdjustmentFormModalProps {
+export interface AdjustmentFormModalProps {
     opened: boolean;
     onClose: () => void;
     spools: Spool[];

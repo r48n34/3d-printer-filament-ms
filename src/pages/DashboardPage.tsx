@@ -6,21 +6,21 @@ import { IconPlus, IconPrinter } from "@tabler/icons-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { AdjustmentFormModal } from "../components/AdjustmentFormModal";
 import { EmptyState } from "../components/EmptyState";
 import { InventoryErrorAlert } from "../components/InventoryErrorAlert";
+import {
+    LazyAdjustmentFormModal,
+    LazyPrintFormModal,
+    LazySpoolFormModal,
+} from "../components/LazyInventoryModals";
 import {
     LowStockSection,
     type AttentionSpool,
 } from "../components/LowStockSection";
 import { PageHeader } from "../components/PageHeader";
-import {
-    PrintFormModal,
-    type PrintFormPreset,
-} from "../components/PrintFormModal";
+import type { PrintFormPreset } from "../components/PrintFormModal";
 import { RecentActivitySection } from "../components/RecentActivitySection";
 import { SpoolCard } from "../components/SpoolCard";
-import { SpoolFormModal } from "../components/SpoolFormModal";
 import { useInventoryData } from "../hooks/useInventoryData";
 import { setSpoolArchived } from "../services/spools";
 import type { PrintRecord, Spool } from "../types";
@@ -243,7 +243,7 @@ export function DashboardPage() {
                 </>
             )}
 
-            <SpoolFormModal
+            <LazySpoolFormModal
                 opened={spoolOpened}
                 onClose={() => {
                     spoolModal.close();
@@ -251,7 +251,7 @@ export function DashboardPage() {
                 }}
                 spool={editingSpool}
             />
-            <PrintFormModal
+            <LazyPrintFormModal
                 opened={printOpened}
                 onClose={printModal.close}
                 spools={spools}
@@ -261,7 +261,7 @@ export function DashboardPage() {
                 lockSpool={Boolean(actionSpool)}
                 preset={printPreset}
             />
-            <AdjustmentFormModal
+            <LazyAdjustmentFormModal
                 opened={adjustmentOpened}
                 onClose={() => {
                     adjustmentModal.close();

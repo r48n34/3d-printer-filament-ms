@@ -23,13 +23,15 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import "mantine-react-table/styles.css";
-import { AdjustmentFormModal } from "../components/AdjustmentFormModal";
 import { EmptyState } from "../components/EmptyState";
 import { InventoryErrorAlert } from "../components/InventoryErrorAlert";
+import {
+    LazyAdjustmentFormModal,
+    LazyPrintFormModal,
+    LazySpoolFormModal,
+} from "../components/LazyInventoryModals";
 import { PageHeader } from "../components/PageHeader";
-import { PrintFormModal } from "../components/PrintFormModal";
 import { SpoolCard } from "../components/SpoolCard";
-import { SpoolFormModal } from "../components/SpoolFormModal";
 import { useInventoryData } from "../hooks/useInventoryData";
 import { setSpoolArchived } from "../services/spools";
 import { MATERIALS, type Spool } from "../types";
@@ -321,7 +323,7 @@ export function FilamentsPage() {
                 </>
             )}
 
-            <SpoolFormModal
+            <LazySpoolFormModal
                 opened={spoolOpened}
                 onClose={() => {
                     spoolModal.close();
@@ -329,7 +331,7 @@ export function FilamentsPage() {
                 }}
                 spool={editing}
             />
-            <PrintFormModal
+            <LazyPrintFormModal
                 opened={printOpened}
                 onClose={() => {
                     printModal.close();
@@ -341,7 +343,7 @@ export function FilamentsPage() {
                 initialSpoolId={actionSpool?.id}
                 lockSpool
             />
-            <AdjustmentFormModal
+            <LazyAdjustmentFormModal
                 opened={adjustmentOpened}
                 onClose={() => {
                     adjustmentModal.close();

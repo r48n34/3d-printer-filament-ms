@@ -49,13 +49,13 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 
 import "mantine-react-table/styles.css";
 
-import { AdjustmentFormModal } from "../components/AdjustmentFormModal";
 import { InventoryErrorAlert } from "../components/InventoryErrorAlert";
 import {
-    PrintFormModal,
-    type PrintFormPreset,
-} from "../components/PrintFormModal";
-import { SpoolFormModal } from "../components/SpoolFormModal";
+    LazyAdjustmentFormModal,
+    LazyPrintFormModal,
+    LazySpoolFormModal,
+} from "../components/LazyInventoryModals";
+import type { PrintFormPreset } from "../components/PrintFormModal";
 import { db } from "../db";
 import { useInventoryData } from "../hooks/useInventoryData";
 import type {
@@ -564,12 +564,12 @@ export function FilamentDetailPage() {
                 </Grid.Col>
             </Grid>
 
-            <SpoolFormModal
+            <LazySpoolFormModal
                 opened={editOpened}
                 onClose={editModal.close}
                 spool={spool}
             />
-            <PrintFormModal
+            <LazyPrintFormModal
                 opened={printOpened}
                 onClose={printModal.close}
                 spools={spools}
@@ -580,7 +580,7 @@ export function FilamentDetailPage() {
                 initialSpoolId={spool.id}
                 lockSpool
             />
-            <AdjustmentFormModal
+            <LazyAdjustmentFormModal
                 opened={adjustmentOpened}
                 onClose={adjustmentModal.close}
                 spools={spools}
