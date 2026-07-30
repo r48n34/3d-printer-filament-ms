@@ -1,9 +1,9 @@
 import {
     Badge,
     Button,
+    Card,
     Group,
     Menu,
-    Paper,
     Select,
     Stack,
     Text,
@@ -17,20 +17,29 @@ import {
     IconAdjustmentsHorizontal,
     IconEdit,
     IconPrinter,
+    IconRepeat,
+    IconRestore,
     IconSearch,
     IconTrash,
 } from "@tabler/icons-react";
 import dayjs from "dayjs";
-import { MantineReactTable, type MRT_ColumnDef } from "mantine-react-table-open";
+import {
+    MantineReactTable,
+    type MRT_ColumnDef,
+} from "mantine-react-table-open";
 import { useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 
 import "mantine-react-table/styles.css";
-import { useSearchParams } from "react-router-dom";
 
 import { AdjustmentFormModal } from "../components/AdjustmentFormModal";
 import { EmptyState } from "../components/EmptyState";
+import { InventoryErrorAlert } from "../components/InventoryErrorAlert";
 import { PageHeader } from "../components/PageHeader";
-import { PrintFormModal } from "../components/PrintFormModal";
+import {
+    PrintFormModal,
+    type PrintFormPreset,
+} from "../components/PrintFormModal";
 import { db } from "../db";
 import { useInventoryData } from "../hooks/useInventoryData";
 import type {
@@ -47,10 +56,11 @@ import {
 import { formatDateTime, formatGrams, formatMoney } from "../utils/format";
 
 export function HistoryPage() {
-    const { spools, prints, adjustments } = useInventoryData();
+    const { spools, prints, adjustments, error } = useInventoryData();
     const [printOpened, printModal] = useDisclosure(false);
     const [adjustmentOpened, adjustmentModal] = useDisclosure(false);
     const [editingPrint, setEditingPrint] = useState<PrintRecord>();
+    const [printPreset, setPrintPreset] = useState<PrintFormPreset>();
     const [editingAdjustment, setEditingAdjustment] =
         useState<AdjustmentRecord>();
     const [searchParams] = useSearchParams();
@@ -94,6 +104,18 @@ export function HistoryPage() {
 
     const openPrint = (record?: PrintRecord) => {
         setEditingPrint(record);
+        setPrintPreset(undefined);
+        printModal.open();
+    };
+
+    const repeatPrint = (record: PrintRecord) => {
+        setEditingPrint(undefined);
+        setPrintPreset({
+            spoolId: record.spoolId,
+            projectName: record.projectName,
+            quantity: record.quantity,
+            gramsPerItem: record.gramsPerItem,
+        });
         printModal.open();
     };
 
@@ -156,7 +178,9 @@ export function HistoryPage() {
                 }
             />
 
-            <Paper withBorder radius="lg" p="md">
+            {error ? <InventoryErrorAlert message={error} /> : null}
+
+            <Card radius="lg" p="md">
                 <Group className="history-filters" align="flex-end" gap="sm">
                     <TextInput
                         className="filter-search"
@@ -218,7 +242,7 @@ export function HistoryPage() {
                         </Button>
                     ) : null}
                 </Group>
-            </Paper>
+            </Card>
 
             {entries.length ? (
                 <HistoryActivityTable
@@ -230,6 +254,7 @@ export function HistoryPage() {
                             : openAdjustment(entry.record)
                     }
                     onDelete={remove}
+                    onRepeat={repeatPrint}
                 />
             ) : (
                 <EmptyState
@@ -255,6 +280,7 @@ export function HistoryPage() {
                 prints={prints}
                 adjustments={adjustments}
                 record={editingPrint}
+                preset={printPreset}
             />
             <AdjustmentFormModal
                 opened={adjustmentOpened}
@@ -301,11 +327,13 @@ function HistoryActivityTable({
     spools,
     onEdit,
     onDelete,
+    onRepeat,
 }: {
     entries: LedgerEntry[];
     spools: Spool[];
     onEdit: (entry: LedgerEntry) => void;
     onDelete: (entry: LedgerEntry) => void;
+    onRepeat: (record: PrintRecord) => void;
 }) {
     const spoolsById = useMemo(
         () => new Map(spools.map((spool) => [spool.id, spool])),
@@ -430,6 +458,27 @@ function HistoryActivityTable({
             positionActionsColumn="last"
             renderRowActionMenuItems={({ row }) => (
                 <>
+                    {row.original.type === "print" ? (
+                        spoolsById.get(row.original.record.spoolId)
+                            ?.archivedAt ? (
+                            <Menu.Item
+                                component={Link}
+                                to={`/filaments/${row.original.record.spoolId}`}
+                                leftSection={<IconRestore size={16} />}
+                            >
+                                Restore spool to log again
+                            </Menu.Item>
+                        ) : (
+                            <Menu.Item
+                                leftSection={<IconRepeat size={16} />}
+                                onClick={() =>
+                                    onRepeat(row.original.record as PrintRecord)
+                                }
+                            >
+                                Log again
+                            </Menu.Item>
+                        )
+                    ) : null}
                     <Menu.Item
                         leftSection={<IconEdit size={16} />}
                         onClick={() => onEdit(row.original)}

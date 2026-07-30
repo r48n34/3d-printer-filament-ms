@@ -11,6 +11,7 @@ import {
     Switch,
     Textarea,
     TextInput,
+    useMantineTheme,
 } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { useForm } from "@mantine/form";
@@ -65,6 +66,7 @@ export function SpoolFormModal({
     onClose,
     spool,
 }: SpoolFormModalProps) {
+    const theme = useMantineTheme();
     const brandSuggestions = useLiveQuery(
         async () => getBrandSuggestions(await db.spools.toArray()),
         [],
@@ -102,6 +104,7 @@ export function SpoolFormModal({
             id: spool?.id ?? createId(),
             name: values.name.trim(),
             initialWeightG: Number(values.initialWeightG),
+            lowStockThresholdG: spool?.lowStockThresholdG,
             material: values.material as Material,
             customMaterial:
                 values.material === "Other"
@@ -151,6 +154,7 @@ export function SpoolFormModal({
             title: "Archive this spool?",
             children: `New prints will be disabled, but all data and history for ${spoolToArchive.name} will remain available.`,
             labels: { confirm: "Archive spool", cancel: "Cancel" },
+            confirmProps: { color: "red" },
             onConfirm: () => void saveSpool(values),
         });
     });
@@ -165,8 +169,9 @@ export function SpoolFormModal({
         >
             <form onSubmit={save}>
                 <Stack gap="md">
+                    
                     <Grid>
-                        <Grid.Col span={{ base: 12, sm: 8 }}>
+                        <Grid.Col span={{ base: 12, sm: 6 }}>
                             <TextInput
                                 label="Spool name"
                                 placeholder="e.g. Copper PLA"
@@ -174,7 +179,7 @@ export function SpoolFormModal({
                                 {...form.getInputProps("name")}
                             />
                         </Grid.Col>
-                        <Grid.Col span={{ base: 12, sm: 4 }}>
+                        <Grid.Col span={{ base: 12, sm: 6 }}>
                             <NumberInput
                                 label="Starting weight"
                                 suffix=" g"
@@ -192,14 +197,14 @@ export function SpoolFormModal({
                         placeholder="Choose or enter a color"
                         format="hex"
                         swatches={[
-                            "#111827",
-                            "#f8fafc",
-                            "#dc2626",
-                            "#ea580c",
-                            "#eab308",
-                            "#16a34a",
-                            "#2563eb",
-                            "#7c3aed",
+                            theme.colors.dark[7],
+                            theme.white,
+                            theme.colors.red[6],
+                            theme.colors.orange[6],
+                            theme.colors.yellow[6],
+                            theme.colors.green[6],
+                            theme.colors.blue[6],
+                            theme.colors.violet[6],
                         ]}
                         {...form.getInputProps("color")}
                     />

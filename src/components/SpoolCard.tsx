@@ -1,42 +1,64 @@
 import {
+    ActionIcon,
     Badge,
     Card,
+    ColorSwatch,
     Group,
+    Menu,
     Progress,
     Stack,
     Text,
-    ThemeIcon,
 } from "@mantine/core";
 import {
-    IconDisc,
+    IconAdjustmentsHorizontal,
+    IconArchive,
+    IconDotsVertical,
+    IconEdit,
+    IconPrinter,
+    IconRestore,
 } from "@tabler/icons-react";
 import type { KeyboardEvent, MouseEvent as ReactMouseEvent } from "react";
 
 import type { Spool } from "../types";
-import { getMaterialName, getProgressValue } from "../utils/filament";
-import { formatGrams } from "../utils/format";
+import {
+    getAvailabilityLabel,
+    getMaterialName,
+    getProgressValue,
+    getSpoolAvailability,
+} from "../utils/filament";
+import { formatDate, formatGrams } from "../utils/format";
 
 interface SpoolCardProps {
     spool: Spool;
     balance: number;
-    // onEdit: () => void;
-    // onArchive: () => void;
     onOpen?: () => void;
+    onPrint?: () => void;
+    onAdjust?: () => void;
+    onEdit?: () => void;
+    onArchive?: () => void;
 }
 
 export function SpoolCard({
     spool,
     balance,
-    // onEdit,
-    // onArchive,
     onOpen,
+    onPrint,
+    onAdjust,
+    onEdit,
+    onArchive,
 }: SpoolCardProps) {
     const progress = getProgressValue(balance, spool.initialWeightG);
-    const color = balance < 0 ? "red" : progress < 20 ? "orange" : "copper";
+    const availability = getSpoolAvailability(spool, balance);
+    const statusColor =
+        availability === "depleted"
+            ? "red"
+            : availability === "low"
+              ? "orange"
+              : "copper";
+    const hasActions = onPrint || onAdjust || onEdit || onArchive;
 
     return (
         <Card
-            withBorder
             radius="lg"
             padding="lg"
             className={`spool-card${onOpen ? " spool-card-clickable" : ""}`}
@@ -65,66 +87,145 @@ export function SpoolCard({
             <Stack gap="md">
                 <Group justify="space-between" align="flex-start" wrap="nowrap">
                     <Group gap="sm" wrap="nowrap">
-                        <ThemeIcon
-                            size={42}
-                            radius="md"
-                            variant="light"
-                            color={ spool.color || "copper"}
-                            style={
-                                spool.color ? { color: spool.color } : undefined
+                        <ColorSwatch
+                            size={34}
+                            color={
+                                spool.color ?? "var(--mantine-color-copper-6)"
                             }
-                        >
-                            <IconDisc size={23} />
-                        </ThemeIcon>
+                            aria-label={
+                                spool.color
+                                    ? `${spool.name} filament color`
+                                    : `${spool.name} color not set`
+                            }
+                        />
                         <div>
-                            <Text fw={500} lineClamp={1}>
+                            <Text fw={600} lineClamp={1}>
                                 {spool.name}
                             </Text>
-                            <Group gap={6} mt={3}>
+                            <Group gap={6} mt={4}>
                                 <Badge size="sm" variant="light" color="gray">
                                     {getMaterialName(spool)}
                                 </Badge>
-                                {spool.archivedAt ? (
-                                    <Badge
-                                        size="sm"
-                                        variant="light"
-                                        color="gray"
-                                    >
-                                        Archived
-                                    </Badge>
-                                ) : null}
+                                <Badge
+                                    size="sm"
+                                    variant="light"
+                                    color={
+                                        spool.archivedAt ? "gray" : statusColor
+                                    }
+                                >
+                                    {spool.archivedAt
+                                        ? "Archived"
+                                        : getAvailabilityLabel(availability)}
+                                </Badge>
                             </Group>
                         </div>
                     </Group>
 
-                    {spool.purchaseDate && (
-                        <Badge color={ spool.color || "copper"} radius={"md"}>
-                            {spool.purchaseDate}
-                        </Badge>
-                    )}
+                    {hasActions ? (
+                        <Menu
+                            position="bottom-end"
+                            withinPortal
+                            transitionProps={{ duration: 0 }}
+                        >
+                            <Menu.Target>
+                                <ActionIcon
+                                    variant="subtle"
+                                    color="gray"
+                                    aria-label={`Actions for ${spool.name}`}
+                                    title={`Actions for ${spool.name}`}
+                                    onClick={(event) => event.stopPropagation()}
+                                >
+                                    <IconDotsVertical size={18} />
+                                </ActionIcon>
+                            </Menu.Target>
+                            <Menu.Dropdown>
+                                {onPrint ? (
+                                    <Menu.Item
+                                        leftSection={<IconPrinter size={16} />}
+                                        disabled={Boolean(spool.archivedAt)}
+                                        title={
+                                            spool.archivedAt
+                                                ? "Restore this spool before logging a print"
+                                                : undefined
+                                        }
+                                        onClick={onPrint}
+                                    >
+                                        Log print
+                                    </Menu.Item>
+                                ) : null}
+                                {onAdjust ? (
+                                    <Menu.Item
+                                        leftSection={
+                                            <IconAdjustmentsHorizontal
+                                                size={16}
+                                            />
+                                        }
+                                        disabled={Boolean(spool.archivedAt)}
+                                        title={
+                                            spool.archivedAt
+                                                ? "Restore this spool before adjusting stock"
+                                                : undefined
+                                        }
+                                        onClick={onAdjust}
+                                    >
+                                        Adjust stock
+                                    </Menu.Item>
+                                ) : null}
+                                {onEdit ? (
+                                    <Menu.Item
+                                        leftSection={<IconEdit size={16} />}
+                                        onClick={onEdit}
+                                    >
+                                        Edit
+                                    </Menu.Item>
+                                ) : null}
+                                {onArchive ? (
+                                    <Menu.Item
+                                        color={
+                                            spool.archivedAt ? undefined : "red"
+                                        }
+                                        leftSection={
+                                            spool.archivedAt ? (
+                                                <IconRestore size={16} />
+                                            ) : (
+                                                <IconArchive size={16} />
+                                            )
+                                        }
+                                        onClick={onArchive}
+                                    >
+                                        {spool.archivedAt
+                                            ? "Restore"
+                                            : "Archive"}
+                                    </Menu.Item>
+                                ) : null}
+                            </Menu.Dropdown>
+                        </Menu>
+                    ) : null}
                 </Group>
 
                 <div>
-                    <Progress.Root size="xl" radius="xl">
-                        <Progress.Section value={progress} color={spool.color || color}>
-                            <Progress.Label>
-                                <Text fz={12}>
-                                    {formatGrams(balance)} {"/"}{" "}
-                                    {formatGrams(spool.initialWeightG)} (
-                                    {Math.round(progress)}%)
-                                </Text>
-                            </Progress.Label>
-                        </Progress.Section>
-                    </Progress.Root>
-                </div>
-                {/* {onOpen ? (
-                    <Group justify="space-between" className="spool-card-link">
-                        <Text size="xs" fw={500} c="copper.8">
-                            View spool details
+                    <Group justify="space-between" gap="xs" mb={6}>
+                        <Text size="xs" c="dimmed">
+                            Remaining
                         </Text>
-                        <IconChevronRight size={16} />
+                        <Text size="sm" fw={600} c={`${statusColor}.8`}>
+                            {formatGrams(balance)} /{" "}
+                            {formatGrams(spool.initialWeightG)}
+                        </Text>
                     </Group>
-                ) : null} */}
+                    <Progress
+                        value={progress}
+                        color={statusColor}
+                        radius="xl"
+                        aria-label={`${spool.name} remaining filament`}
+                    />
+                </div>
+
+                {spool.purchaseDate ? (
+                    <Text size="xs" c="dimmed">
+                        Purchased {formatDate(spool.purchaseDate)}
+                    </Text>
+                ) : null}
             </Stack>
         </Card>
     );

@@ -1,10 +1,10 @@
 import {
     Alert,
     Button,
+    Card,
     Grid,
     Group,
     NumberInput,
-    Paper,
     Select,
     Stack,
     Text,
@@ -162,7 +162,7 @@ export function QuickPrintSection({
     });
 
     return (
-        <Paper
+        <Card
             className="quick-print-section"
             radius="xl"
             p={{ base: "lg", sm: "xl" }}
@@ -190,7 +190,7 @@ export function QuickPrintSection({
                             <Text size="xs" c="dimmed" fw={500} tt="uppercase">
                                 Total used
                             </Text>
-                            <Text fw={800} fz="lg">
+                            <Text fw={600} fz="lg">
                                 {formatGrams(total)}
                             </Text>
                             <Text
@@ -202,7 +202,7 @@ export function QuickPrintSection({
                             >
                                 Est. material cost
                             </Text>
-                            <Text fw={800} fz="lg">
+                            <Text fw={600} fz="lg">
                                 {estimatedCost !== undefined
                                     ? formatMoney(
                                           estimatedCost,
@@ -295,20 +295,20 @@ export function QuickPrintSection({
                     >
                         <Group justify="space-between" gap="md">
                             <Text size="sm">
-                                Printing history needs a filament spool to
-                                deduct from.
+                                Add your first spool, then log completed prints
+                                here to keep its balance current.
                             </Text>
                             <Button
                                 size="xs"
                                 variant="light"
                                 onClick={onAddSpool}
                             >
-                                Add spool
+                                Add your first spool
                             </Button>
                         </Group>
                     </Alert>
                 )}
             </Stack>
-        </Paper>
+        </Card>
     );
 }

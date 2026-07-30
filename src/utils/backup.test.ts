@@ -54,6 +54,26 @@ describe("backup validation and persistence", () => {
         expect(parseBackup(JSON.stringify(validBackup))).toEqual(validBackup);
     });
 
+    it("accepts old backups and optional low-stock thresholds", () => {
+        expect(
+            parseBackup(
+                JSON.stringify({
+                    ...validBackup,
+                    spools: [
+                        {
+                            ...validBackup.spools[0],
+                            lowStockThresholdG: 75,
+                        },
+                    ],
+                }),
+            ).spools[0].lowStockThresholdG,
+        ).toBe(75);
+        expect(
+            parseBackup(JSON.stringify(validBackup)).spools[0]
+                .lowStockThresholdG,
+        ).toBeUndefined();
+    });
+
     it("rejects malformed JSON and orphaned history", () => {
         expect(() => parseBackup("{")).toThrow("not valid JSON");
         expect(() =>

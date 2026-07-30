@@ -46,6 +46,7 @@ describe("SpoolCard", () => {
     it("keeps card actions separate from navigation", async () => {
         const user = userEvent.setup();
         const onOpen = vi.fn();
+        const onPrint = vi.fn();
 
         render(
             <MantineProvider>
@@ -53,6 +54,8 @@ describe("SpoolCard", () => {
                     spool={spool}
                     balance={820}
                     onOpen={onOpen}
+                    onPrint={onPrint}
+                    onAdjust={() => undefined}
                     onEdit={() => undefined}
                     onArchive={() => undefined}
                 />
@@ -63,5 +66,23 @@ describe("SpoolCard", () => {
             screen.getByRole("button", { name: /actions for copper pla/i }),
         );
         expect(onOpen).not.toHaveBeenCalled();
+
+        expect(onOpen).not.toHaveBeenCalled();
+    });
+
+    it("shows semantic stock states", () => {
+        const { rerender } = render(
+            <MantineProvider>
+                <SpoolCard spool={spool} balance={50} />
+            </MantineProvider>,
+        );
+        expect(screen.getByText("Low stock")).toBeInTheDocument();
+
+        rerender(
+            <MantineProvider>
+                <SpoolCard spool={spool} balance={0} />
+            </MantineProvider>,
+        );
+        expect(screen.getByText("Depleted")).toBeInTheDocument();
     });
 });

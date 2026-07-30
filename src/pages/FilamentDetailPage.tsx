@@ -12,7 +12,6 @@ import {
     Grid,
     Group,
     Menu,
-    Paper,
     RingProgress,
     SimpleGrid,
     Skeleton,
@@ -36,6 +35,7 @@ import {
     // IconHistory,
     IconPalette,
     IconPrinter,
+    IconRepeat,
     IconRestore,
     IconScale,
     IconTrash,
@@ -44,13 +44,17 @@ import {
     MantineReactTable,
     type MRT_ColumnDef,
 } from "mantine-react-table-open";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import "mantine-react-table/styles.css";
 
 import { AdjustmentFormModal } from "../components/AdjustmentFormModal";
-import { PrintFormModal } from "../components/PrintFormModal";
+import { InventoryErrorAlert } from "../components/InventoryErrorAlert";
+import {
+    PrintFormModal,
+    type PrintFormPreset,
+} from "../components/PrintFormModal";
 import { SpoolFormModal } from "../components/SpoolFormModal";
 import { db } from "../db";
 import { useInventoryData } from "../hooks/useInventoryData";
@@ -108,15 +112,33 @@ function PageHeader({
 export function FilamentDetailPage() {
     const { spoolId } = useParams();
     const navigate = useNavigate();
-    const { spools, prints, adjustments, balanceBySpool, loading } =
+    const { spools, prints, adjustments, balanceBySpool, error, loading } =
         useInventoryData();
     const spool = spools.find(({ id }) => id === spoolId);
     const [editOpened, editModal] = useDisclosure(false);
     const [printOpened, printModal] = useDisclosure(false);
     const [adjustmentOpened, adjustmentModal] = useDisclosure(false);
     const [editingPrint, setEditingPrint] = useState<PrintRecord>();
+    const [printPreset, setPrintPreset] = useState<PrintFormPreset>();
     const [editingAdjustment, setEditingAdjustment] =
         useState<AdjustmentRecord>();
+
+    useEffect(() => {
+        if (!spool?.color) return;
+
+        const root = document.documentElement;
+        const previousGlow = root.style.getPropertyValue("--app-main-glow");
+
+        root.style.setProperty("--app-main-glow", spool.color);
+
+        return () => {
+            if (previousGlow) {
+                root.style.setProperty("--app-main-glow", previousGlow);
+            } else {
+                root.style.removeProperty("--app-main-glow");
+            }
+        };
+    }, [spool?.color]);
 
     if (loading) {
         return (
@@ -129,6 +151,23 @@ export function FilamentDetailPage() {
                     ))}
                 </SimpleGrid>
                 <Skeleton height={360} radius="lg" />
+            </Stack>
+        );
+    }
+
+    if (error) {
+        return (
+            <Stack gap="lg">
+                <Button
+                    component={Link}
+                    to="/filaments"
+                    variant="subtle"
+                    leftSection={<IconArrowLeft size={17} />}
+                    w="fit-content"
+                >
+                    Back to filaments
+                </Button>
+                <InventoryErrorAlert message={error} />
             </Stack>
         );
     }
@@ -163,14 +202,27 @@ export function FilamentDetailPage() {
         spool.purchasePrice === undefined
             ? undefined
             : spoolPrints.reduce(
-                (sum, record) =>
-                    sum + (getEstimatedPrintCost(spool, record) ?? 0),
-                0,
-            );
+                  (sum, record) =>
+                      sum + (getEstimatedPrintCost(spool, record) ?? 0),
+                  0,
+              );
     const progress = getProgressValue(balance, spool.initialWeightG);
 
     const openPrint = (record?: PrintRecord) => {
         setEditingPrint(record);
+        setPrintPreset(undefined);
+        printModal.open();
+    };
+
+    const repeatPrint = (record: PrintRecord) => {
+        if (spool.archivedAt) return;
+        setEditingPrint(undefined);
+        setPrintPreset({
+            spoolId: record.spoolId,
+            projectName: record.projectName,
+            quantity: record.quantity,
+            gramsPerItem: record.gramsPerItem,
+        });
         printModal.open();
     };
 
@@ -190,6 +242,7 @@ export function FilamentDetailPage() {
                 confirm: restoring ? "Restore spool" : "Archive spool",
                 cancel: "Cancel",
             },
+            confirmProps: { color: restoring ? "teal" : "red" },
             onConfirm: async () => {
                 await db.spools.update(spool.id, {
                     archivedAt: restoring
@@ -250,10 +303,16 @@ export function FilamentDetailPage() {
                             gap: "var(--mantine-spacing-sm)",
                         }}
                     >
-                        <ThemeIcon size="xl" color={spool.color || "var(--mantine-color-gray-6)"} variant="default">
+                        <ThemeIcon
+                            size="xl"
+                            color={spool.color || "var(--mantine-color-gray-6)"}
+                            variant="default"
+                        >
                             <IconDisc
                                 size={30}
-                                color={spool.color || "var(--mantine-color-gray-6)"}
+                                color={
+                                    spool.color || "var(--mantine-color-gray-6)"
+                                }
                             />
                         </ThemeIcon>
                         <span>{spool.name}</span>
@@ -376,9 +435,9 @@ export function FilamentDetailPage() {
                                         value={
                                             spool.purchasePrice !== undefined
                                                 ? formatMoney(
-                                                    spool.purchasePrice,
-                                                    spool.purchaseCurrency,
-                                                )
+                                                      spool.purchasePrice,
+                                                      spool.purchaseCurrency,
+                                                  )
                                                 : "Not provided"
                                         }
                                         note={
@@ -393,9 +452,9 @@ export function FilamentDetailPage() {
                                         value={
                                             estimatedCost !== undefined
                                                 ? formatMoney(
-                                                    estimatedCost,
-                                                    spool.purchaseCurrency,
-                                                )
+                                                      estimatedCost,
+                                                      spool.purchaseCurrency,
+                                                  )
                                                 : "Not priced"
                                         }
                                         note="Based on recorded prints"
@@ -473,9 +532,10 @@ export function FilamentDetailPage() {
                                         : openAdjustment(entry.record)
                                 }
                                 onDelete={removeEntry}
+                                onRepeat={repeatPrint}
                             />
                         ) : (
-                            <Paper className="detail-empty" radius="lg" p="xl">
+                            <Card className="detail-empty" radius="lg" p="xl">
                                 <ThemeIcon
                                     variant="light"
                                     color="copper"
@@ -498,7 +558,7 @@ export function FilamentDetailPage() {
                                 >
                                     Add first print
                                 </Button>
-                            </Paper>
+                            </Card>
                         )}
                     </Card>
                 </Grid.Col>
@@ -516,6 +576,7 @@ export function FilamentDetailPage() {
                 prints={prints}
                 adjustments={adjustments}
                 record={editingPrint}
+                preset={printPreset}
                 initialSpoolId={spool.id}
                 lockSpool
             />
@@ -547,7 +608,7 @@ function UsageBalanceCard({
     const color = balance < 0 ? "red" : progress < 20 ? "orange" : "copper";
 
     return (
-        <Paper withBorder radius="lg" p="lg">
+        <Card radius="lg" p="lg">
             <Group justify="space-between" align="center" wrap="nowrap">
                 <div>
                     <Text
@@ -559,7 +620,7 @@ function UsageBalanceCard({
                     >
                         Remaining
                     </Text>
-                    <Text fz={24} fw={800} mt={5}>
+                    <Text fz={24} fw={600} mt={5}>
                         {formatGrams(balance)}
                     </Text>
                     <Text size="xs" c="dimmed" mt={2}>
@@ -578,13 +639,13 @@ function UsageBalanceCard({
                     thickness={8}
                     sections={[{ value: progress, color }]}
                     label={
-                        <Text ta="center" size="sm" fw={700}>
+                        <Text ta="center" size="sm" fw={600}>
                             {Math.round(progress)}%
                         </Text>
                     }
                 />
             </Group>
-        </Paper>
+        </Card>
     );
 }
 
@@ -629,11 +690,13 @@ function HistoryActivityTable({
     spool,
     onEdit,
     onDelete,
+    onRepeat,
 }: {
     entries: LedgerEntry[];
     spool: Spool;
     onEdit: (entry: LedgerEntry) => void;
     onDelete: (entry: LedgerEntry) => void;
+    onRepeat: (record: PrintRecord) => void;
 }) {
     const columns = useMemo<MRT_ColumnDef<LedgerEntry>[]>(
         () => [
@@ -669,7 +732,7 @@ function HistoryActivityTable({
                                 )}
                             </ThemeIcon>
                             <div>
-                                <Text fw={650} size="sm">
+                                <Text fw={600} size="sm">
                                     {getActivityLabel(entry)}
                                 </Text>
                                 <Badge
@@ -729,11 +792,11 @@ function HistoryActivityTable({
                             {entry.type !== "print"
                                 ? "—"
                                 : printCost !== undefined
-                                    ? formatMoney(
+                                  ? formatMoney(
                                         printCost,
                                         spool.purchaseCurrency,
                                     )
-                                    : "Not priced"}
+                                  : "Not priced"}
                         </Text>
                     );
                 },
@@ -780,6 +843,19 @@ function HistoryActivityTable({
             positionActionsColumn="last"
             renderRowActionMenuItems={({ row }) => (
                 <>
+                    {row.original.type === "print" ? (
+                        <Menu.Item
+                            leftSection={<IconRepeat size={15} />}
+                            disabled={Boolean(spool.archivedAt)}
+                            onClick={() =>
+                                onRepeat(row.original.record as PrintRecord)
+                            }
+                        >
+                            {spool.archivedAt
+                                ? "Restore spool to log again"
+                                : "Log again"}
+                        </Menu.Item>
+                    ) : null}
                     <Menu.Item
                         leftSection={<IconEdit size={15} />}
                         onClick={() => onEdit(row.original)}

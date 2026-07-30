@@ -1,6 +1,7 @@
 import {
     Alert,
     Button,
+    ColorSwatch,
     Grid,
     Group,
     Modal,
@@ -37,6 +38,13 @@ interface PrintFormValues {
     notes: string;
 }
 
+export interface PrintFormPreset {
+    spoolId: string;
+    projectName: string;
+    quantity: number;
+    gramsPerItem: number;
+}
+
 interface PrintFormModalProps {
     opened: boolean;
     onClose: () => void;
@@ -44,6 +52,7 @@ interface PrintFormModalProps {
     prints: PrintRecord[];
     adjustments: AdjustmentRecord[];
     record?: PrintRecord;
+    preset?: PrintFormPreset;
     initialSpoolId?: string;
     lockSpool?: boolean;
 }
@@ -55,6 +64,7 @@ export function PrintFormModal({
     prints,
     adjustments,
     record,
+    preset,
     initialSpoolId,
     lockSpool = false,
 }: PrintFormModalProps) {
@@ -62,10 +72,15 @@ export function PrintFormModal({
         (spool) => !spool.archivedAt || spool.id === record?.spoolId,
     );
     const initialValues = (): PrintFormValues => ({
-        spoolId: record?.spoolId ?? initialSpoolId ?? activeSpools[0]?.id ?? "",
-        projectName: record?.projectName ?? "",
-        quantity: record?.quantity ?? 1,
-        gramsPerItem: record?.gramsPerItem ?? "",
+        spoolId:
+            record?.spoolId ??
+            preset?.spoolId ??
+            initialSpoolId ??
+            activeSpools[0]?.id ??
+            "",
+        projectName: record?.projectName ?? preset?.projectName ?? "",
+        quantity: record?.quantity ?? preset?.quantity ?? 1,
+        gramsPerItem: record?.gramsPerItem ?? preset?.gramsPerItem ?? "",
         printedAt: dateTimeInputValue(record?.printedAt),
         notes: record?.notes ?? "",
     });
@@ -95,7 +110,15 @@ export function PrintFormModal({
         if (opened) form.setValues(initialValues());
         // Reset only when the selected record or requested spool changes.
         // oxlint-disable-next-line react-hooks/exhaustive-deps
-    }, [opened, record?.id, initialSpoolId]);
+    }, [
+        opened,
+        record?.id,
+        preset?.spoolId,
+        preset?.projectName,
+        preset?.quantity,
+        preset?.gramsPerItem,
+        initialSpoolId,
+    ]);
 
     const selectedSpool = spools.find(({ id }) => id === form.values.spoolId);
     const candidate: PrintRecord | undefined = selectedSpool
@@ -180,7 +203,13 @@ export function PrintFormModal({
         <Modal
             opened={opened}
             onClose={onClose}
-            title={record ? "Edit print record" : "Record a print"}
+            title={
+                record
+                    ? "Edit print record"
+                    : preset
+                      ? "Log print again"
+                      : "Record a print"
+            }
             size="lg"
             centered
         >
@@ -195,6 +224,22 @@ export function PrintFormModal({
                         searchable
                         disabled={lockSpool}
                         withAsterisk
+                        leftSection={
+                            selectedSpool ? (
+                                <ColorSwatch
+                                    size={18}
+                                    color={
+                                        selectedSpool.color ??
+                                        "var(--mantine-color-copper-6)"
+                                    }
+                                    aria-label={
+                                        selectedSpool.color
+                                            ? `${selectedSpool.name} filament color`
+                                            : `${selectedSpool.name} color not set`
+                                    }
+                                />
+                            ) : undefined
+                        }
                         {...form.getInputProps("spoolId")}
                     />
                     <TextInput
@@ -228,15 +273,13 @@ export function PrintFormModal({
                             <Text size="sm" fw={500} mb={7}>
                                 Total used
                             </Text>
-                            <Text >
-                                {formatGrams(total)}
-                            </Text>
+                            <Text>{formatGrams(total)}</Text>
                         </Grid.Col>
                         <Grid.Col span={{ base: 6, sm: 3 }}>
                             <Text size="sm" fw={500} mb={7}>
                                 Est. material cost
                             </Text>
-                            <Text >
+                            <Text>
                                 {estimatedCost !== undefined
                                     ? formatMoney(
                                           estimatedCost,

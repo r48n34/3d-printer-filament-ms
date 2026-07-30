@@ -5,13 +5,25 @@ import { getSpoolBalance } from "../utils/filament";
 
 export const useInventoryData = () => {
     const data = useLiveQuery(async () => {
-        const [spools, prints, adjustments] = await Promise.all([
-            db.spools.toArray(),
-            db.prints.toArray(),
-            db.adjustments.toArray(),
-        ]);
-        spools.sort((a, b) => a.name.localeCompare(b.name));
-        return { spools, prints, adjustments };
+        try {
+            const [spools, prints, adjustments] = await Promise.all([
+                db.spools.toArray(),
+                db.prints.toArray(),
+                db.adjustments.toArray(),
+            ]);
+            spools.sort((a, b) => a.name.localeCompare(b.name));
+            return { spools, prints, adjustments, error: undefined };
+        } catch (error) {
+            return {
+                spools: [],
+                prints: [],
+                adjustments: [],
+                error:
+                    error instanceof Error
+                        ? error.message
+                        : "Local storage could not be read.",
+            };
+        }
     }, []);
 
     const spools = data?.spools ?? [];
@@ -29,6 +41,7 @@ export const useInventoryData = () => {
         prints,
         adjustments,
         balanceBySpool,
+        error: data?.error,
         loading: data === undefined,
     };
 };

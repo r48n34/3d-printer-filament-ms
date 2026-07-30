@@ -36,7 +36,7 @@ const theme = createTheme({
     headings: {
         fontFamily:
             'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-        fontWeight: "750",
+        fontWeight: "600",
     },
     components: {
         Button: { defaultProps: { radius: "md" } },

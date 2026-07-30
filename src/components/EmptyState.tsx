@@ -1,4 +1,4 @@
-import { Button, Paper, Stack, Text, ThemeIcon, Title } from "@mantine/core";
+import { Button, Card, Stack, Text, ThemeIcon, Title } from "@mantine/core";
 import { IconDisc } from "@tabler/icons-react";
 
 interface EmptyStateProps {
@@ -15,7 +15,7 @@ export function EmptyState({
     onAction,
 }: EmptyStateProps) {
     return (
-        <Paper className="empty-state" p="xl" radius="lg" withBorder>
+        <Card className="empty-state" p="xl" radius="lg">
             <Stack align="center" gap="sm">
                 <ThemeIcon size={48} radius="xl" variant="light" color="copper">
                     <IconDisc size={26} />
@@ -30,6 +30,6 @@ export function EmptyState({
                     </Button>
                 ) : null}
             </Stack>
-        </Paper>
+        </Card>
     );
 }

@@ -6,7 +6,6 @@ import {
     FileButton,
     Group,
     List,
-    Paper,
     SimpleGrid,
     Stack,
     Text,
@@ -25,6 +24,7 @@ import {
 } from "@tabler/icons-react";
 import { useState } from "react";
 
+import { InventoryErrorAlert } from "../components/InventoryErrorAlert";
 import { PageHeader } from "../components/PageHeader";
 import { useInventoryData } from "../hooks/useInventoryData";
 import type { FilamentBackup } from "../types";
@@ -34,14 +34,18 @@ import {
     replaceWithBackup,
 } from "../utils/backup";
 import { formatDateTime } from "../utils/format";
+import { getLastBackupAt, setLastBackupAt } from "../utils/preferences";
 
 export function DataPage() {
-    const { spools, prints, adjustments } = useInventoryData();
+    const { spools, prints, adjustments, error } = useInventoryData();
     const [preview, setPreview] = useState<FilamentBackup>();
     const [fileName, setFileName] = useState("");
+    const [lastBackupAt, setLastBackupAtState] = useState(getLastBackupAt);
 
     const exportData = async () => {
-        await downloadBackup();
+        const downloadedAt = await downloadBackup();
+        setLastBackupAt(downloadedAt);
+        setLastBackupAtState(downloadedAt);
         notifications.show({
             color: "teal",
             title: "Backup downloaded",
@@ -115,6 +119,8 @@ export function DataPage() {
                 description="Back up or restore the complete workshop ledger."
             />
 
+            {error ? <InventoryErrorAlert message={error} /> : null}
+
             <Alert
                 variant="light"
                 color="copper"
@@ -159,10 +165,16 @@ export function DataPage() {
                                 confirmation
                             </List.Item>
                         </List>
+                        <Text size="sm" c="dimmed">
+                            {lastBackupAt
+                                ? `Last downloaded ${formatDateTime(lastBackupAt)}`
+                                : "No backup has been downloaded in this browser."}
+                        </Text>
                         <Button
                             mt="auto"
                             leftSection={<IconDownload size={17} />}
                             onClick={() => void exportData()}
+                            disabled={Boolean(error)}
                         >
                             Download JSON backup
                         </Button>
@@ -195,14 +207,14 @@ export function DataPage() {
                                     variant="default"
                                     leftSection={<IconUpload size={17} />}
                                     {...props}
+                                    disabled={Boolean(error)}
                                 >
                                     Choose backup file
                                 </Button>
                             )}
                         </FileButton>
                         {preview ? (
-                            <Paper
-                                withBorder
+                            <Card
                                 radius="md"
                                 p="md"
                                 bg="var(--mantine-color-blue-light)"
@@ -228,7 +240,7 @@ export function DataPage() {
                                         </Text>
                                     </div>
                                 </Group>
-                            </Paper>
+                            </Card>
                         ) : null}
                         <Button
                             color="orange"
@@ -246,7 +258,7 @@ export function DataPage() {
 
 function CountCard({ label, value }: { label: string; value: number }) {
     return (
-        <Paper withBorder radius="lg" p="lg">
+        <Card radius="lg" p="lg">
             <Group justify="space-between">
                 <div>
                     <Text
@@ -258,7 +270,7 @@ function CountCard({ label, value }: { label: string; value: number }) {
                     >
                         {label}
                     </Text>
-                    <Text fz={28} fw={800}>
+                    <Text fz={28} fw={600}>
                         {value}
                     </Text>
                 </div>
@@ -266,6 +278,6 @@ function CountCard({ label, value }: { label: string; value: number }) {
                     <IconDatabase size={15} />
                 </Badge>
             </Group>
-        </Paper>
+        </Card>
     );
 }

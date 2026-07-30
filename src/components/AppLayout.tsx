@@ -23,6 +23,12 @@ const LINKS = [
     { to: "/filaments", label: "Filaments", icon: IconDisc },
     { to: "/history", label: "History", icon: IconHistory },
 ];
+const DATA_LINK = {
+    to: "/data",
+    label: "Data & backup",
+    icon: IconDatabase,
+};
+const MOBILE_LINKS = [...LINKS, DATA_LINK];
 
 export function AppLayout() {
     const location = useLocation();
@@ -122,7 +128,7 @@ export function AppLayout() {
                 hiddenFrom="sm"
                 aria-label="Main navigation"
             >
-                {LINKS.map(({ to, label, icon: Icon }) => {
+                {MOBILE_LINKS.map(({ to, label, icon: Icon }) => {
                     const active =
                         to === "/"
                             ? location.pathname === "/"

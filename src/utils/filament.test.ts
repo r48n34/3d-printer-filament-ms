@@ -3,9 +3,12 @@ import { describe, expect, it } from "vitest";
 import type { AdjustmentRecord, PrintRecord, Spool } from "../types";
 import {
     calculateBalance,
+    getAvailabilityLabel,
     getEstimatedPrintCost,
     getLedgerEntries,
+    getLowStockThreshold,
     getPrintTotal,
+    getSpoolAvailability,
 } from "./filament";
 
 const spool: Spool = {
@@ -130,5 +133,19 @@ describe("filament calculations", () => {
                 [],
             ),
         ).toBe(-20);
+    });
+
+    it("classifies default and custom low-stock thresholds", () => {
+        expect(getLowStockThreshold(spool)).toBe(100);
+        expect(getSpoolAvailability(spool, 101)).toBe("available");
+        expect(getSpoolAvailability(spool, 100)).toBe("low");
+        expect(getSpoolAvailability(spool, 0)).toBe("depleted");
+        expect(getSpoolAvailability(spool, -1)).toBe("depleted");
+
+        const custom = { ...spool, lowStockThresholdG: 20 };
+        expect(getLowStockThreshold(custom)).toBe(20);
+        expect(getSpoolAvailability(custom, 21)).toBe("available");
+        expect(getSpoolAvailability(custom, 20)).toBe("low");
+        expect(getAvailabilityLabel("low")).toBe("Low stock");
     });
 });

@@ -10,12 +10,12 @@
         "test": "vitest run",
         "preview": "vite preview",
         "Syntax And Format": "------------------------------------",
-        "lint": "oxlint",
-        "lint:fix": "oxlint --fix",
-        "lint:fixsugg": "oxlint --fix-suggestions",
-        "fmt": "oxfmt",
-        "fmt:check": "oxfmt --check",
-        "full:check": "yarn lint:fix & yarn lint:fix"
+        "lint": "oxlint src vite.config.ts vitest.config.ts",
+        "lint:fix": "oxlint --fix src vite.config.ts vitest.config.ts",
+        "lint:fixsugg": "oxlint --fix-suggestions src vite.config.ts vitest.config.ts",
+        "fmt": "oxfmt src public package.json index.html postcss.config.cjs vite.config.ts vitest.config.ts vercel.json tsconfig.json tsconfig.app.json tsconfig.node.json README.md",
+        "fmt:check": "oxfmt --check src public package.json index.html postcss.config.cjs vite.config.ts vitest.config.ts vercel.json tsconfig.json tsconfig.app.json tsconfig.node.json README.md",
+        "full:check": "pnpm fmt:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build"
     },
     "dependencies": {
         "@mantine/core": "^9.4.2",

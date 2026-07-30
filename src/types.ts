@@ -6,6 +6,7 @@ export interface Spool {
     id: string;
     name: string;
     initialWeightG: number;
+    lowStockThresholdG?: number;
     material?: Material;
     customMaterial?: string;
     color?: string;

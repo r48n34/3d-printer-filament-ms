@@ -9,6 +9,7 @@ const spoolSchema = z.object({
     id: z.string().min(1),
     name: z.string().min(1),
     initialWeightG: z.number().positive(),
+    lowStockThresholdG: z.number().nonnegative().optional(),
     material: z.enum(["PLA", "PETG", "TPU", "ABS", "ASA", "Other"]).optional(),
     customMaterial: optionalText,
     color: optionalText,
@@ -122,4 +123,5 @@ export const downloadBackup = async () => {
     link.download = `spoolbook-backup-${backup.exportedAt.slice(0, 10)}.json`;
     link.click();
     URL.revokeObjectURL(url);
+    return backup.exportedAt;
 };
