@@ -33,6 +33,11 @@ const PrivacyPage = lazy(() =>
         default: module.PrivacyPage,
     })),
 );
+const HomePage = lazy(() =>
+    import("./pages/HomePage").then((module) => ({
+        default: module.HomePage,
+    })),
+);
 
 function App() {
     return (
@@ -44,6 +49,7 @@ function App() {
             }
         >
             <Routes>
+                <Route path="home" element={<HomePage />} />
                 <Route element={<AppLayout />}>
                     <Route index element={<DashboardPage />} />
                     <Route path="filaments" element={<FilamentsPage />} />

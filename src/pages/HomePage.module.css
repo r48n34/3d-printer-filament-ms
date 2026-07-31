@@ -1,0 +1,79 @@
+.page {
+    min-height: 100vh;
+    overflow: hidden;
+    color: var(--mantine-color-text);
+    background:
+        radial-gradient(
+            circle at 12% 4%,
+            var(--mantine-color-copper-light),
+            transparent 25rem
+        ),
+        radial-gradient(
+            circle at 92% 36%,
+            var(--mantine-color-copper-light),
+            transparent 28rem
+        ),
+        var(--app-background);
+}
+
+.header {
+    position: relative;
+    z-index: 10;
+    border-bottom: 1px solid var(--app-border);
+    background: light-dark(
+        var(--mantine-color-white),
+        var(--mantine-color-dark-8)
+    );
+}
+
+.brand {
+    color: var(--mantine-color-text);
+    text-decoration: none;
+}
+
+.hero {
+    min-height: auto;
+    display: flex;
+    align-items: center;
+    padding-block: var(--mantine-spacing-xl);
+}
+
+.section {
+    padding-block: calc(var(--mantine-spacing-xl) * 3);
+}
+
+.featureCard {
+    height: 100%;
+    background: light-dark(
+        var(--mantine-color-white),
+        var(--mantine-color-dark-7)
+    );
+}
+
+.steps {
+    background: light-dark(
+        var(--mantine-color-copper-0),
+        var(--mantine-color-dark-7)
+    );
+}
+
+.stepNumber {
+    font-variant-numeric: tabular-nums;
+}
+
+.footer {
+    border-top: 1px solid var(--app-border);
+}
+
+@media (max-width: 61.99em) {
+    .hero {
+        min-height: auto;
+        padding-block: var(--mantine-spacing-xl);
+    }
+}
+
+@media (max-width: 35.99em) {
+    .desktopAction {
+        display: none;
+    }
+}
