@@ -217,33 +217,35 @@ export function PrintFormModal({
         >
             <form onSubmit={save}>
                 <Stack gap="md">
-                    <Select
-                        label="Filament spool"
-                        data={activeSpools.map((spool) => ({
-                            value: spool.id,
-                            label: `${spool.name}${spool.material ? ` · ${spool.material}` : ""}`,
-                        }))}
-                        searchable
-                        disabled={lockSpool}
-                        withAsterisk
-                        leftSection={
-                            selectedSpool ? (
-                                <ColorSwatch
-                                    size={18}
-                                    color={
-                                        selectedSpool.color ??
-                                        "var(--mantine-color-copper-6)"
-                                    }
-                                    aria-label={
-                                        selectedSpool.color
-                                            ? `${selectedSpool.name} filament color`
-                                            : `${selectedSpool.name} color not set`
-                                    }
-                                />
-                            ) : undefined
-                        }
-                        {...form.getInputProps("spoolId")}
-                    />
+                    {!lockSpool && (
+                        <Select
+                            label="Filament spool"
+                            data={activeSpools.map((spool) => ({
+                                value: spool.id,
+                                label: `${spool.name}${spool.material ? ` · ${spool.material}` : ""}`,
+                            }))}
+                            searchable
+                            disabled={lockSpool}
+                            withAsterisk
+                            leftSection={
+                                selectedSpool ? (
+                                    <ColorSwatch
+                                        size={18}
+                                        color={
+                                            selectedSpool.color ??
+                                            "var(--mantine-color-copper-6)"
+                                        }
+                                        aria-label={
+                                            selectedSpool.color
+                                                ? `${selectedSpool.name} filament color`
+                                                : `${selectedSpool.name} color not set`
+                                        }
+                                    />
+                                ) : undefined
+                            }
+                            {...form.getInputProps("spoolId")}
+                        />
+                    )}
                     <TextInput
                         label="Project name"
                         placeholder="e.g. Apple model"
@@ -251,7 +253,7 @@ export function PrintFormModal({
                         {...form.getInputProps("projectName")}
                     />
                     <Grid>
-                        <Grid.Col span={{ base: 12, sm: 3 }}>
+                        <Grid.Col span={{ base: 6, sm: 3 }}>
                             <NumberInput
                                 label="Quantity"
                                 min={1}
@@ -261,7 +263,7 @@ export function PrintFormModal({
                                 {...form.getInputProps("quantity")}
                             />
                         </Grid.Col>
-                        <Grid.Col span={{ base: 12, sm: 3 }}>
+                        <Grid.Col span={{ base: 6, sm: 3 }}>
                             <NumberInput
                                 label="Grams each"
                                 suffix=" g"
