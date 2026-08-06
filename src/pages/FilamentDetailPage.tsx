@@ -3,7 +3,6 @@ import {
     Accordion,
     Alert,
     Badge,
-    Box,
     Button,
     Card,
     ColorSwatch,
@@ -77,37 +76,6 @@ import {
     formatGrams,
     formatMoney,
 } from "../utils/format";
-
-function PageHeader({
-    title,
-    description,
-    actions,
-}: {
-    title: React.ReactNode;
-    description: string;
-    actions?: React.ReactNode;
-}) {
-    return (
-        <Flex
-            justify="space-between"
-            align={{ base: "stretch", sm: "flex-end" }}
-            direction={{ base: "column", sm: "row" }}
-            gap="md"
-        >
-            <Stack gap={3}>
-                <Title className="page-title" order={1}>
-                    {title}
-                </Title>
-                <Text c="dimmed" size="sm">
-                    {description}
-                </Text>
-            </Stack>
-            {actions ? (
-                <Box className="page-header-actions">{actions}</Box>
-            ) : null}
-        </Flex>
-    );
-}
 
 export function FilamentDetailPage() {
     const { spoolId } = useParams();
@@ -202,10 +170,10 @@ export function FilamentDetailPage() {
         spool.purchasePrice === undefined
             ? undefined
             : spoolPrints.reduce(
-                  (sum, record) =>
-                      sum + (getEstimatedPrintCost(spool, record) ?? 0),
-                  0,
-              );
+                (sum, record) =>
+                    sum + (getEstimatedPrintCost(spool, record) ?? 0),
+                0,
+            );
     const progress = getProgressValue(balance, spool.initialWeightG);
 
     const openPrint = (record?: PrintRecord) => {
@@ -294,64 +262,88 @@ export function FilamentDetailPage() {
                 Filament library
             </Button>
 
-            <PageHeader
-                title={
-                    <span
-                        style={{
-                            alignItems: "center",
-                            display: "inline-flex",
-                            gap: "var(--mantine-spacing-sm)",
-                        }}
-                    >
-                        <ThemeIcon
-                            size="xl"
-                            color={spool.color || "var(--mantine-color-gray-6)"}
-                            variant="default"
+            <Flex
+                justify="space-between"
+                align={{ base: "stretch", sm: "flex-end" }}
+                direction={{ base: "column", sm: "row" }}
+                gap="md"
+            >
+                <Stack gap={3}>
+                    <Title className="page-title" order={1}>
+                        <span
+                            style={{
+                                alignItems: "center",
+                                display: "inline-flex",
+                                gap: "var(--mantine-spacing-sm)",
+                            }}
                         >
-                            <IconDisc
-                                size={30}
-                                color={
-                                    spool.color || "var(--mantine-color-gray-6)"
-                                }
-                            />
-                        </ThemeIcon>
-                        <span>{spool.name}</span>
-                    </span>
-                }
-                description={`${getMaterialName(spool)}${spool.brand ? ` · ${spool.brand}` : ""} · Added ${formatDate(spool.createdAt)}`}
-                actions={
-                    <Group gap="sm">
-                        <Tooltip label="Edit spool">
-                            <ActionIcon
+                            <ThemeIcon
+                                size="xl"
+                                color={spool.color || "var(--mantine-color-gray-6)"}
                                 variant="default"
-                                size="lg"
-                                onClick={editModal.open}
-                                aria-label="Edit spool"
                             >
-                                <IconEdit size={18} />
-                            </ActionIcon>
-                        </Tooltip>
-                        <Tooltip label="Adjust stock">
-                            <ActionIcon
-                                variant="default"
-                                size="lg"
-                                onClick={() => openAdjustment()}
-                                disabled={Boolean(spool.archivedAt)}
-                                aria-label="Adjust stock"
-                            >
-                                <IconAdjustmentsHorizontal size={18} />
-                            </ActionIcon>
-                        </Tooltip>
-                        <Button
-                            leftSection={<IconPrinter size={17} />}
-                            onClick={() => openPrint()}
-                            disabled={Boolean(spool.archivedAt)}
+                                <IconDisc
+                                    size={30}
+                                    color={
+                                        spool.color || "var(--mantine-color-gray-6)"
+                                    }
+                                />
+                            </ThemeIcon>
+                            <span>{spool.name}</span>
+                        </span>
+                    </Title>
+
+                    <Group mt={8}>
+                        <Badge
+                            radius={"sm"}
+                            color={
+                                spool.color || "var(--mantine-color-gray-6)"
+                            }
                         >
-                            Add print
-                        </Button>
+                            {getMaterialName(spool)} {spool.brand ? ` · ${spool.brand}` : ""}
+                        </Badge>
+                        <Badge
+                            variant="dot"
+                            radius={"sm"}
+                            color={
+                                spool.color || "var(--mantine-color-gray-6)"
+                            }
+                        >
+                            Added {formatDate(spool.createdAt)}
+                        </Badge>
                     </Group>
-                }
-            />
+                </Stack>
+                <Group gap="sm">
+                    <Tooltip label="Edit spool">
+                        <ActionIcon
+                            variant="default"
+                            size="lg"
+                            onClick={editModal.open}
+                            aria-label="Edit spool"
+                        >
+                            <IconEdit size={18} />
+                        </ActionIcon>
+                    </Tooltip>
+                    <Tooltip label="Adjust stock">
+                        <ActionIcon
+                            variant="default"
+                            size="lg"
+                            onClick={() => openAdjustment()}
+                            disabled={Boolean(spool.archivedAt)}
+                            aria-label="Adjust stock"
+                        >
+                            <IconAdjustmentsHorizontal size={18} />
+                        </ActionIcon>
+                    </Tooltip>
+                    <Button
+                        leftSection={<IconPrinter size={17} />}
+                        onClick={() => openPrint()}
+                        disabled={Boolean(spool.archivedAt)}
+                    >
+                        Add print
+                    </Button>
+                </Group>
+            </Flex>
 
             {spool.archivedAt ? (
                 <Alert color="gray" title="This spool is archived">
@@ -435,9 +427,9 @@ export function FilamentDetailPage() {
                                         value={
                                             spool.purchasePrice !== undefined
                                                 ? formatMoney(
-                                                      spool.purchasePrice,
-                                                      spool.purchaseCurrency,
-                                                  )
+                                                    spool.purchasePrice,
+                                                    spool.purchaseCurrency,
+                                                )
                                                 : "Not provided"
                                         }
                                         note={
@@ -452,9 +444,9 @@ export function FilamentDetailPage() {
                                         value={
                                             estimatedCost !== undefined
                                                 ? formatMoney(
-                                                      estimatedCost,
-                                                      spool.purchaseCurrency,
-                                                  )
+                                                    estimatedCost,
+                                                    spool.purchaseCurrency,
+                                                )
                                                 : "Not priced"
                                         }
                                         note="Based on recorded prints"
@@ -792,11 +784,11 @@ function HistoryActivityTable({
                             {entry.type !== "print"
                                 ? "—"
                                 : printCost !== undefined
-                                  ? formatMoney(
+                                    ? formatMoney(
                                         printCost,
                                         spool.purchaseCurrency,
                                     )
-                                  : "Not priced"}
+                                    : "Not priced"}
                         </Text>
                     );
                 },
