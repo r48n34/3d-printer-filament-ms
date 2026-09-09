@@ -25,6 +25,17 @@
     backdrop-filter: blur(12px);
 }
 
+.app-brand {
+    border-radius: var(--mantine-radius-md);
+    color: inherit;
+    text-decoration: none;
+    transition: opacity 120ms ease;
+}
+
+.app-brand:hover {
+    opacity: 0.8;
+}
+
 .app-navbar {
     background: var(--app-surface);
 }

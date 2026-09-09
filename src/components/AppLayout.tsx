@@ -50,24 +50,34 @@ export function AppLayout() {
                         px={{ base: "md", sm: "xl" }}
                         justify="space-between"
                     >
-                        <Group gap="sm">
-                            <ThemeIcon size={26} radius="md" color="copper">
-                                <IconDisc size={18} />
-                            </ThemeIcon>
-                            <div>
-                                <Title order={3} fz={18} lh={1}>
-                                    Spoolbook
-                                </Title>
-                                <Text
-                                    className="app-brand-subtitle"
-                                    size="xs"
-                                    c="dimmed"
-                                    mt={3}
+                        <NavLink
+                            to="/"
+                            className="app-brand"
+                            aria-label="Spoolbook home"
+                        >
+                            <Group gap="sm">
+                                <ThemeIcon
+                                    size={26}
+                                    radius="md"
+                                    color="copper"
                                 >
-                                    Filament ledger
-                                </Text>
-                            </div>
-                        </Group>
+                                    <IconDisc size={18} />
+                                </ThemeIcon>
+                                <div>
+                                    <Title order={3} fz={18} lh={1}>
+                                        Spoolbook
+                                    </Title>
+                                    <Text
+                                        className="app-brand-subtitle"
+                                        size="xs"
+                                        c="dimmed"
+                                        mt={3}
+                                    >
+                                        Filament ledger
+                                    </Text>
+                                </div>
+                            </Group>
+                        </NavLink>
                         <ColorSchemeToggle />
                     </Group>
                 </AppShell.Header>

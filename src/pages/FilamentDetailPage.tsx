@@ -314,16 +314,27 @@ export function FilamentDetailPage() {
                     </Group>
                 </Stack>
                 <Group gap="sm">
-                    <Tooltip label="Edit spool">
-                        <ActionIcon
-                            variant="default"
-                            size="lg"
-                            onClick={editModal.open}
-                            aria-label="Edit spool"
-                        >
-                            <IconEdit size={18} />
-                        </ActionIcon>
-                    </Tooltip>
+                    <Button
+                        variant="default"
+                        leftSection={<IconEdit size={17} />}
+                        onClick={editModal.open}
+                    >
+                        Edit
+                    </Button>
+                    <Button
+                        variant="light"
+                        color={spool.archivedAt ? "teal" : "red"}
+                        leftSection={
+                            spool.archivedAt ? (
+                                <IconRestore size={17} />
+                            ) : (
+                                <IconArchive size={17} />
+                            )
+                        }
+                        onClick={toggleArchive}
+                    >
+                        {spool.archivedAt ? "Restore" : "Archive"}
+                    </Button>
                     <Tooltip label="Adjust stock">
                         <ActionIcon
                             variant="default"
@@ -383,32 +394,6 @@ export function FilamentDetailPage() {
                             </Accordion.Control>
                             <Accordion.Panel>
                                 <Stack gap="md">
-                                    <Group justify="flex-end">
-                                        <Tooltip
-                                            label={
-                                                spool.archivedAt
-                                                    ? "Restore spool"
-                                                    : "Archive spool"
-                                            }
-                                        >
-                                            <ActionIcon
-                                                variant="light"
-                                                color="gray"
-                                                onClick={toggleArchive}
-                                                aria-label={
-                                                    spool.archivedAt
-                                                        ? "Restore spool"
-                                                        : "Archive spool"
-                                                }
-                                            >
-                                                {spool.archivedAt ? (
-                                                    <IconRestore size={18} />
-                                                ) : (
-                                                    <IconArchive size={18} />
-                                                )}
-                                            </ActionIcon>
-                                        </Tooltip>
-                                    </Group>
                                     <DetailItem
                                         icon={<IconDisc size={17} />}
                                         label="Material"
