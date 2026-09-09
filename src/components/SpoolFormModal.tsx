@@ -173,10 +173,11 @@ export function SpoolFormModal({
                 <Stack gap="md">
                     <Grid>
                         <Grid.Col span={{ base: 12, sm: 6 }}>
-                            <TextInput
+                            <Autocomplete
                                 label="Spool name"
                                 placeholder="e.g. Copper PLA"
                                 withAsterisk
+                                data={['Home', 'Office', "Other"]}
                                 {...form.getInputProps("name")}
                             />
                         </Grid.Col>

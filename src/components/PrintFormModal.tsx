@@ -1,5 +1,6 @@
 import {
     Alert,
+    Autocomplete,
     Button,
     ColorSwatch,
     Grid,
@@ -10,7 +11,7 @@ import {
     Stack,
     Text,
     Textarea,
-    TextInput,
+    // TextInput,
 } from "@mantine/core";
 import { DateTimePicker } from "@mantine/dates";
 import { useForm } from "@mantine/form";
@@ -80,7 +81,7 @@ export function PrintFormModal({
             initialSpoolId ??
             activeSpools[0]?.id ??
             "",
-        projectName: record?.projectName ?? preset?.projectName ?? "",
+        projectName: record?.projectName ?? preset?.projectName ?? "Items",
         quantity: record?.quantity ?? preset?.quantity ?? 1,
         gramsPerItem: record?.gramsPerItem ?? preset?.gramsPerItem ?? "",
         printedAt: dateTimeInputValue(record?.printedAt),
@@ -95,8 +96,8 @@ export function PrintFormModal({
                 value.trim() ? null : "Enter a project name",
             quantity: (value) =>
                 typeof value === "number" &&
-                Number.isInteger(value) &&
-                value > 0
+                    Number.isInteger(value) &&
+                    value > 0
                     ? null
                     : "Quantity must be a positive whole number",
             gramsPerItem: (value) =>
@@ -125,33 +126,33 @@ export function PrintFormModal({
     const selectedSpool = spools.find(({ id }) => id === form.values.spoolId);
     const candidate: PrintRecord | undefined = selectedSpool
         ? {
-              id: record?.id ?? "preview",
-              spoolId: selectedSpool.id,
-              projectName: form.values.projectName,
-              quantity: Number(form.values.quantity) || 0,
-              gramsPerItem: Number(form.values.gramsPerItem) || 0,
-              printedAt: dayjs(form.values.printedAt).toISOString(),
-              createdAt: record?.createdAt ?? new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-          }
+            id: record?.id ?? "preview",
+            spoolId: selectedSpool.id,
+            projectName: form.values.projectName,
+            quantity: Number(form.values.quantity) || 0,
+            gramsPerItem: Number(form.values.gramsPerItem) || 0,
+            printedAt: dayjs(form.values.printedAt).toISOString(),
+            createdAt: record?.createdAt ?? new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+        }
         : undefined;
     const projectedBalance =
         selectedSpool && candidate
             ? calculateBalance(
-                  selectedSpool,
-                  [
-                      ...prints.filter(
-                          ({ id, spoolId }) =>
-                              spoolId === selectedSpool.id &&
-                              id !== record?.id &&
-                              id !== candidate.id,
-                      ),
-                      candidate,
-                  ],
-                  adjustments.filter(
-                      ({ spoolId }) => spoolId === selectedSpool.id,
-                  ),
-              )
+                selectedSpool,
+                [
+                    ...prints.filter(
+                        ({ id, spoolId }) =>
+                            spoolId === selectedSpool.id &&
+                            id !== record?.id &&
+                            id !== candidate.id,
+                    ),
+                    candidate,
+                ],
+                adjustments.filter(
+                    ({ spoolId }) => spoolId === selectedSpool.id,
+                ),
+            )
             : 0;
     const total = getPrintTotal({
         quantity: Number(form.values.quantity) || 0,
@@ -209,14 +210,22 @@ export function PrintFormModal({
                 record
                     ? "Edit print record"
                     : preset
-                      ? "Log print again"
-                      : "Record a print"
+                        ? "Log print again"
+                        : "Record a print"
             }
             size="lg"
             centered
         >
             <form onSubmit={save}>
                 <Stack gap="md">
+                    <Group justify="flex-end" hiddenFrom="md">
+                        <Button variant="default" onClick={onClose}>
+                            Cancel
+                        </Button>
+                        <Button type="submit">
+                            {record ? "Save changes" : "Record print"}
+                        </Button>
+                    </Group>
                     {!lockSpool && (
                         <Select
                             label="Filament spool"
@@ -246,10 +255,11 @@ export function PrintFormModal({
                             {...form.getInputProps("spoolId")}
                         />
                     )}
-                    <TextInput
+                    <Autocomplete
                         label="Project name"
                         placeholder="e.g. Apple model"
                         withAsterisk
+                        data={["Items", "Big", "Small"]}
                         {...form.getInputProps("projectName")}
                     />
                     <Grid>
@@ -286,9 +296,9 @@ export function PrintFormModal({
                             <Text>
                                 {estimatedCost !== undefined
                                     ? formatMoney(
-                                          estimatedCost,
-                                          selectedSpool?.purchaseCurrency,
-                                      )
+                                        estimatedCost,
+                                        selectedSpool?.purchaseCurrency,
+                                    )
                                     : "Not priced"}
                             </Text>
                         </Grid.Col>
@@ -297,6 +307,18 @@ export function PrintFormModal({
                         label="Printed at"
                         valueFormat="D MMM YYYY, h:mm A"
                         withAsterisk
+                        presets={[
+                            { value: dayjs().subtract(1, 'day').format('YYYY-MM-DD HH:mm:ss'), label: 'Yesterday' },
+                            { value: dayjs().format('YYYY-MM-DD HH:mm:ss'), label: 'Today' },
+                            { value: dayjs().add(1, 'day').format('YYYY-MM-DD HH:mm:ss'), label: 'Tomorrow' },
+                            { value: dayjs().add(1, 'month').format('YYYY-MM-DD HH:mm:ss'), label: 'Next month' },
+                            { value: dayjs().add(1, 'year').format('YYYY-MM-DD HH:mm:ss'), label: 'Next year' },
+                            {
+                                value: dayjs().subtract(1, 'month').format('YYYY-MM-DD HH:mm:ss'),
+                                label: 'Last month',
+                            },
+                            { value: dayjs().subtract(1, 'year').format('YYYY-MM-DD HH:mm:ss'), label: 'Last year' },
+                        ]}
                         {...form.getInputProps("printedAt")}
                     />
                     <Textarea
