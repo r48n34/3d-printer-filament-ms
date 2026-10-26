@@ -52,6 +52,7 @@
         "postcss": "^8.5.19",
         "postcss-preset-mantine": "^1.18.0",
         "postcss-simple-vars": "^7.0.1",
+        "tab-to-components": "^0.4.1",
         "typescript": "^7.0.2",
         "vite": "^8.1.1",
         "vite-plugin-react-click-to-component": "^4.2.2",

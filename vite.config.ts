@@ -1,8 +1,9 @@
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
-import { reactClickToComponent } from "vite-plugin-react-click-to-component";
+import { tabToComponents } from "tab-to-components";
+// import { reactClickToComponent } from "vite-plugin-react-click-to-component";
 
-export default defineConfig(({ command }) => {
+export default defineConfig(() => {
     if (!process.env.VITE_LAUNCH_EDITOR) {
         process.env.LAUNCH_EDITOR = "code";
     } else {
@@ -11,8 +12,11 @@ export default defineConfig(({ command }) => {
 
     return {
         plugins: [
-            command === "serve" && reactClickToComponent(),
+            // command === "serve" && reactClickToComponent(),
             react(),
+            tabToComponents({
+                editor: process.env.LAUNCH_EDITOR || "code",
+            }),
         ].filter(Boolean),
     };
 });
